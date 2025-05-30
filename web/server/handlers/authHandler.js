@@ -5,11 +5,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { nanoid } = require('nanoid');
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const registerHandler = async (request, h) => {
   try {
     const { username, password, email } = request.payload;
     if (!username || !password || !email) {
       return h.response({ status: 'gagal', pesan: 'Semua field wajib diisi' }).code(400);
+    }
+
+    if (!emailRegex.test(email)) {
+      return h.response({ status: 'gagal', pesan: 'Email tidak valid' }).code(400);
     }
 
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
@@ -53,7 +59,10 @@ const getAllUsers = async (request, h) => {
     if (username) query.username = new RegExp(username, 'i');
     if (email) query.email = new RegExp(email, 'i');
 
-    const users = await User.find(query).select('-password'); // Kecualikan password
+    const users = await User.find(query).select('-password');
+    if (users.length === 0) {
+      return h.response({ status: 'gagal', pesan: 'Tidak bisa menemukan user' }).code(404);
+    }
     return h.response({ status: 'sukses', data: users }).code(200);
   } catch (error) {
     return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500);
