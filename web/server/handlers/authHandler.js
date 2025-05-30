@@ -9,7 +9,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const registerHandler = async (request, h) => {
   try {
-    const { username, password, email } = request.payload;
+    const { username, password, email, role = 'user' } = request.payload;
     if (!username || !password || !email) {
       return h.response({ status: 'gagal', pesan: 'Semua field wajib diisi' }).code(400);
     }
@@ -18,13 +18,17 @@ const registerHandler = async (request, h) => {
       return h.response({ status: 'gagal', pesan: 'Email tidak valid' }).code(400);
     }
 
+    if (role && !['admin', 'user'].includes(role)) {
+      return h.response({ status: 'gagal', pesan: 'Role harus admin atau user' }).code(400);
+    }
+
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existingUser) {
       return h.response({ status: 'gagal', pesan: 'Username atau email sudah ada' }).code(400);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ id: nanoid(10), username, password: hashedPassword, email });
+    const newUser = new User({ id: nanoid(10), username, password: hashedPassword, email, role });
     await newUser.save();
 
     return h.response({ status: 'sukses', pesan: 'Pengguna berhasil didaftarkan' }).code(201);
@@ -45,8 +49,8 @@ const loginHandler = async (request, h) => {
       return h.response({ status: 'gagal', pesan: 'Username atau password salah' }).code(401);
     }
 
-    const token = jwt.sign({ id: user.id, username: user.username }, 'secret_key', { expiresIn: '1h' });
-    return h.response({ status: 'sukses', pesan: 'Login berhasil', token }).code(200);
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, 'secret_key', { expiresIn: '1h' });
+    return h.response({ status: 'sukses', pesan: 'Login berhasil', token, role: user.role }).code(200);
   } catch (error) {
     return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500);
   }
@@ -69,4 +73,32 @@ const getAllUsers = async (request, h) => {
   }
 };
 
-module.exports = { registerHandler, loginHandler, getAllUsers };
+const checkRoleHandler = async (request, h) => {
+  try {
+    const authHeader = request.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return h.response({ status: 'gagal', pesan: 'Autentikasi diperlukan' }).code(401);
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, 'secret_key');
+    if (!decoded) {
+      return h.response({ status: 'gagal', pesan: 'Token tidak valid' }).code(401);
+    }
+
+    const { role } = decoded;
+    if (role === 'admin') {
+      return h.response({ status: 'sukses', pesan: 'Anda adalah admin', role }).code(200);
+    } else if (role === 'user') {
+      return h.response({ status: 'sukses', pesan: 'Anda adalah user', role }).code(200);
+    }
+    return h.response({ status: 'gagal', pesan: 'Role tidak dikenali' }).code(400);
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      return h.response({ status: 'gagal', pesan: 'Token tidak valid' }).code(401);
+    }
+    return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500);
+  }
+};
+
+module.exports = { registerHandler, loginHandler, getAllUsers, checkRoleHandler };

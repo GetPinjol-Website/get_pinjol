@@ -25,7 +25,10 @@ const getAllEducation = async (request, h) => {
     if (title) query.title = new RegExp(title, 'i');
     if (category) query.category = category;
 
-    const educations = await Education.find(query).sort({ date: -1 }); // Urutkan berdasarkan tanggal terbaru
+    const educations = await Education.find(query).sort({ date: -1 });
+    if (educations.length === 0) {
+      return h.response({ status: 'gagal', pesan: 'Data tidak ditemukan' }).code(404);
+    }
     return h.response({ status: 'sukses', data: educations }).code(200);
   } catch (error) {
     return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500);

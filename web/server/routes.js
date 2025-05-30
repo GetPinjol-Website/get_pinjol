@@ -1,6 +1,6 @@
 'use strict';
 
-const { registerHandler, loginHandler, getAllUsers } = require('./handlers/authHandler');
+const { registerHandler, loginHandler, getAllUsers, checkRoleHandler } = require('./handlers/authHandler');
 const { createEducation, getAllEducation, getEducationById, updateEducation, deleteEducation } = require('./handlers/educationHandler');
 const { getPinjolPrediction, getAllPinjol } = require('./handlers/pinjolHandler');
 const { createReportWeb, getTopReports, createReportApp, getReportById, getAllReports } = require('./handlers/reportHandler');
@@ -96,6 +96,11 @@ const routes = [
     method: 'GET',
     path: '/reports',
     handler: getAllReports
+  },
+  {
+    method: 'GET',
+    path: '/check-role',
+    handler: checkRoleHandler
   }
 ];
 
