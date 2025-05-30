@@ -1,12 +1,11 @@
-import { getDashboardStats } from '../../utils/api';
+class DashboardPagePresenter {
+  constructor(model) {
+    this.model = model;
+  }
 
-export class DashboardPresenter {
-    async getDashboardStats() {
-        try {
-            const response = await getDashboardStats();
-            return response.data;
-        } catch (error) {
-            return { totalReports: 150, pendingReports: 30 }; // Data statis
-        }
-    }
+  getStats() {
+    return this.model.getStats();
+  }
 }
+
+export default DashboardPagePresenter;

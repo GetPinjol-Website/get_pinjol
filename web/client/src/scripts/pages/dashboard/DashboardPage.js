@@ -1,28 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { DashboardPresenter } from './DashboardPresenter';
-import '../../styles/tailwind.css';
+import React from 'react';
+import DashboardPagePresenter from './presenter/DashboardPagePresenter';
+import DashboardPageModel from './model/DashboardPageModel';
 
-export function DashboardPage() {
-    const presenter = new DashboardPresenter();
-    const [stats, setStats] = useState({ totalReports: 0, pendingReports: 0 });
+const DashboardPage = () => {
+  const presenter = new DashboardPagePresenter(new DashboardPageModel());
+  const stats = presenter.getStats();
 
-    useEffect(() => {
-        presenter.getDashboardStats().then(setStats);
-    }, []);
-
-    return (
-        <div className="max-w-4xl mx-auto mt-10 p-6">
-            <h2 className="text-2xl font-bold mb-4">Dashboard Admin</h2>
-            <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-green-100 rounded">
-                    <h3 className="font-bold">Total Laporan</h3>
-                    <p>{stats.totalReports}</p>
-                </div>
-                <div className="p-4 bg-yellow-100 rounded">
-                    <h3 className="font-bold">Laporan Menunggu</h3>
-                    <p>{stats.pendingReports}</p>
-                </div>
-            </div>
+  return (
+    <div className="min-h-screen bg-[#18230F] text-[#FFFDF6] p-6">
+      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-[#1F7D53] p-4 rounded">
+          <h2>Total Laporan</h2>
+          <p>{stats.totalReports}</p>
         </div>
-    );
-}
+        <div className="bg-[#1F7D53] p-4 rounded">
+          <h2>Laporan Tertunda</h2>
+          <p>{stats.pendingReports}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardPage;

@@ -1,6 +1,7 @@
-export class LoginModel {
-    constructor(data) {
-        this.username = data.username;
-        this.password = data.password;
-    }
+class LoginPageModel {
+  validateForm(data) {
+    return data.username && data.password;
+  }
 }
+
+export default LoginPageModel;

@@ -1,7 +1,7 @@
-export class RegisterModel {
-    constructor(data) {
-        this.username = data.username;
-        this.email = data.email;
-        this.password = data.password;
-    }
+class RegisterPageModel {
+  validateForm(data) {
+    return data.username && data.email && data.password;
+  }
 }
+
+export default RegisterPageModel;

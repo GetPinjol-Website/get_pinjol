@@ -1,12 +1,20 @@
-import { register } from '../../utils/api';
+import { useNavigate } from 'react-router-dom';
 
-export class RegisterPresenter {
-    async register(username, email, password) {
-        try {
-            const response = await register({ username, email, password });
-            return response;
-        } catch (error) {
-            throw new Error('Registration failed');
-        }
+class RegisterPagePresenter {
+  constructor(model) {
+    this.model = model;
+    this.navigate = useNavigate();
+  }
+
+  registerUser(data) {
+    if (this.model.validateForm(data)) {
+      // Simulasi panggil API (ganti dengan logika nyata)
+      console.log('Registering user:', data);
+      this.navigate('/login');
+    } else {
+      alert('Semua field harus diisi!');
     }
+  }
 }
+
+export default RegisterPagePresenter;

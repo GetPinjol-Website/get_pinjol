@@ -1,12 +1,20 @@
-import { login } from '../../utils/api';
+import { useNavigate } from 'react-router-dom';
 
-export class LoginPresenter {
-    async login(username, password) {
-        try {
-            const response = await login({ username, password });
-            return response;
-        } catch (error) {
-            throw new Error('Login failed');
-        }
+class LoginPagePresenter {
+  constructor(model) {
+    this.model = model;
+    this.navigate = useNavigate();
+  }
+
+  loginUser(data) {
+    if (this.model.validateForm(data)) {
+      // Simulasi panggil API (ganti dengan logika nyata)
+      console.log('Logging in user:', data);
+      this.navigate('/dashboard');
+    } else {
+      alert('Username dan password harus diisi!');
     }
+  }
 }
+
+export default LoginPagePresenter;

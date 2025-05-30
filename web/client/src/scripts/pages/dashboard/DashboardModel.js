@@ -1,6 +1,7 @@
-export class DashboardModel {
-    constructor(data) {
-        this.totalReports = data.totalReports;
-        this.pendingReports = data.pendingReports;
-    }
+class DashboardPageModel {
+  getStats() {
+    return { totalReports: 150, pendingReports: 30 };
+  }
 }
+
+export default DashboardPageModel;
