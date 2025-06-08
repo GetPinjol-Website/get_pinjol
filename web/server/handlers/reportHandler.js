@@ -23,7 +23,11 @@ const createReportWeb = async (request, h) => {
       return h.response({ status: 'gagal', pesan: 'Semua field kecuali evidence wajib diisi' }).code(400).header('Cache-Control', 'no-store');
     }
 
-    const newReport = new ReportWeb({ id: nanoid(10), appName, description, category, incidentDate, evidence, userId: decoded.id, updatedAt: new Date() });
+    if (isNaN(Date.parse(incidentDate))) {
+      return h.response({ status: 'gagal', pesan: 'Tanggal insiden tidak valid' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    const newReport = new ReportWeb({ id: nanoid(10), appName, description, category, incidentDate: new Date(incidentDate), evidence, userId: decoded.id, updatedAt: new Date() });
     await newReport.save();
     return h.response({ status: 'sukses', pesan: 'Laporan berhasil dikirim', data: newReport }).code(201).header('Cache-Control', 'no-store');
   } catch (error) {

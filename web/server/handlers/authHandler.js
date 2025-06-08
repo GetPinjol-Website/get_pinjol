@@ -28,7 +28,7 @@ const registerHandler = async (request, h) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ id: nanoid(10), username, password: hashedPassword, email, role });
+    const newUser = new User({ id: nanoid(10), username, password: hashedPassword, email, role, updatedAt: new Date() });
     await newUser.save();
 
     return h.response({ status: 'sukses', pesan: 'Pengguna berhasil didaftarkan' }).code(201).header('Cache-Control', 'no-store');

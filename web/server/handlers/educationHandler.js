@@ -11,7 +11,7 @@ const createEducation = async (request, h) => {
     }
 
     const newEducation = new Education({ id: nanoid(10), title, content, date, category, updatedAt: new Date() });
-    await newEducation_VOLUME
+    await newEducation.save();
     return h.response({ status: 'sukses', pesan: 'Edukasi berhasil dibuat', data: newEducation }).code(201).header('Cache-Control', 'no-store');
   } catch (error) {
     return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
@@ -74,9 +74,15 @@ const updateEducation = async (request, h) => {
     if (!title || !content || !date) {
       return h.response({ status: 'gagal', pesan: 'Judul, konten, dan tanggal wajib diisi' }).code(400).header('Cache-Control', 'no-store');
     }
+
+    // Validasi data "salah" (contoh: date tidak valid)
+    if (isNaN(Date.parse(date))) {
+      return h.response({ status: 'gagal', pesan: 'Tanggal tidak valid' }).code(400).header('Cache-Control', 'no-store');
+    }
+
     education.title = title;
     education.content = content;
-    education.date = date;
+    education.date = new Date(date);
     education.category = category;
     education.updatedAt = new Date();
     await education.save();
