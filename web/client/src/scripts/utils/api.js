@@ -1,23 +1,75 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const api = axios.create({
+    baseURL: 'http://localhost:9000',
+});
 
-export async function login(data) {
-    const response = await axios.post(${ API_BASE_URL } / auth / login, data);
-    return response.data;
+export async function register(userData) {
+    try {
+        const response = await api.post('/register', userData);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
 }
 
-export async function register(data) {
-    const response = await axios.post(${ API_BASE_URL } / auth / register, data);
-    return response.data;
+export async function login(credentials) {
+    try {
+        const response = await api.post('/login', credentials);
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('role', response.data.role);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
 }
 
-export async function getArticles() {
-    const response = await axios.get(${ API_BASE_URL } / education);
-    return response.data;
+export async function getEducations() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await api.get('/education', { headers: { Authorization: `Bearer ${token}` } });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
 }
 
-export async function getDashboardStats() {
-    const response = await axios.get(${ API_BASE_URL } / dashboard / stats);
-    return response.data;
+export async function getEducationById(id) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await api.get(`/education/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}
+
+export async function getReports() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await api.get('/reports', { headers: { Authorization: `Bearer ${token}` } });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}
+
+export async function createReportWeb(reportData) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await api.post('/report/web', reportData, { headers: { Authorization: `Bearer ${token}` } });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}
+
+export async function createReportApp(reportData) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await api.post('/report/app', reportData, { headers: { Authorization: `Bearer ${token}` } });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
 }

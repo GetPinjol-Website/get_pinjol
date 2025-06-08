@@ -1,7 +1,4 @@
-class LandingPageModel {
-  getWelcomeMessage() {
-    return 'Selamat datang di GetPinjol - Platform edukasi pinjaman online!';
-  }
-}
-
-export default LandingPageModel;
+export const landingData = {
+  title: 'Welcome to GetPinjol',
+  message: 'Please login or register to continue.',
+};

@@ -1,7 +1,4 @@
-class DashboardPageModel {
-  getStats() {
-    return { totalReports: 150, pendingReports: 30 };
-  }
-}
-
-export default DashboardPageModel;
+export const dashboardData = {
+  user: { title: 'User Dashboard' },
+  admin: { title: 'Admin Dashboard' },
+};
