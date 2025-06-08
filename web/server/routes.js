@@ -4,6 +4,7 @@ const { registerHandler, loginHandler, getAllUsers, checkRoleHandler } = require
 const { createEducation, getAllEducation, getEducationById, updateEducation, deleteEducation } = require('./handlers/educationHandler');
 const { getPinjolPrediction, getAllPinjol } = require('./handlers/pinjolHandler');
 const { createReportWeb, getTopReports, createReportApp, getReportById, getAllReports } = require('./handlers/reportHandler');
+const User = require('./models/user');
 
 const routes = [
   {
@@ -29,11 +30,16 @@ const routes = [
         const { id } = request.params;
         const user = await User.findOne({ id }).select('-password');
         if (!user) {
-          return h.response({ status: 'gagal', pesan: 'Pengguna tidak ditemukan' }).code(404);
+          return h.response({ status: 'gagal', pesan: 'Pengguna tidak ditemukan' }).code(404)
+            .header('Cache-Control', 'public, max-age=3600')
+            .header('ETag', `user-${id}`);
         }
-        return h.response({ status: 'sukses', data: user }).code(200);
+        return h.response({ status: 'sukses', data: user }).code(200)
+          .header('Cache-Control', 'public, max-age=3600')
+          .header('ETag', `user-${id}`)
+          .header('Last-Modified', user.updatedAt.toUTCString());
       } catch (error) {
-        return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500);
+        return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
       }
     }
   },

@@ -7,7 +7,9 @@ const reportAppSchema = new mongoose.Schema({
   appName: { type: String, required: true },
   description: { type: String, required: true },
   status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
-  reportedAt: { type: Date, default: Date.now }
+  userId: { type: String, required: true },
+  reportedAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('ReportApp', reportAppSchema);

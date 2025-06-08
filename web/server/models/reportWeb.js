@@ -9,8 +9,10 @@ const reportWebSchema = new mongoose.Schema({
   category: { type: [String], required: true },
   incidentDate: { type: Date, required: true },
   evidence: { type: String },
+  userId: { type: String, required: true },
   status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
-  reportedAt: { type: Date, default: Date.now }
+  reportedAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('ReportWeb', reportWebSchema);
