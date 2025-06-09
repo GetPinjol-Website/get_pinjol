@@ -6,7 +6,7 @@ import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
 import Sidebar from '../../components/layout/Sidebar';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function AdminDashboard() {
     const [reports, setReports] = useState([]);
@@ -27,18 +27,18 @@ function AdminDashboard() {
 
     const renderRow = (report) => (
         <>
-            <td className="px-4 py-2">{report.appName}</td>
-            <td className="px-4 py-2">{report.category}</td>
-            <td className="px-4 py-2">{new Date(report.incidentDate).toLocaleDateString()}</td>
-            <td className="px-4 py-2">Belum Diverifikasi</td>
+            <td>{report.appName}</td>
+            <td>{report.category}</td>
+            <td>{new Date(report.incidentDate).toLocaleDateString()}</td>
+            <td>Belum Diverifikasi</td>
         </>
     );
 
     return (
-        <motion.div {...pageTransition} className="flex">
+        <motion.div {...pageTransition} class="flex">
             <Sidebar role="admin" />
-            <div className="flex-1 p-4 ml-64">
-                <h1 className="text-2xl font-bold text-dark-green-900 mb-4">Dashboard Admin</h1>
+            <div className="content-with-sidebar">
+                <h1>Dashboard Admin</h1>
                 <ErrorMessage message={error} onClose={() => setError('')} />
                 {isLoading && <Spinner />}
                 <Card title="Ringkasan Laporan">

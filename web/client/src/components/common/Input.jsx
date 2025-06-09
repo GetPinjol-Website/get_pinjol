@@ -1,9 +1,9 @@
 function Input({ label, type = 'text', value, onChange, name, required, className }) {
     return (
-        <div className="mb-4">
-            <label className="block text-dark-green-900 font-medium mb-1">
+        <div className="input-group">
+            <label>
                 {label}
-                {required && <span className="text-red-500">*</span>}
+                {required && <span className="required">*</span>}
             </label>
             <input
                 type={type}
@@ -11,7 +11,7 @@ function Input({ label, type = 'text', value, onChange, name, required, classNam
                 onChange={onChange}
                 name={name}
                 required={required}
-                className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 bg-cream-200 text-dark-green-900 ${className}`}
+                className={className}
             />
         </div>
     );

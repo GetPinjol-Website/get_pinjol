@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { modalAnimation } from '../../utils/animations.jsx';
+import { modalAnimation } from '../../utils/animations';
 
 function ErrorMessage({ message, onClose }) {
     if (!message) return null;
@@ -7,13 +7,13 @@ function ErrorMessage({ message, onClose }) {
     return (
         <motion.div
             {...modalAnimation}
-            className="fixed top-4 right-4 bg-red-500 text-cream-100 p-4 rounded-lg shadow-lg max-w-sm z-50"
+            className="error-message"
         >
-            <div className="flex justify-between items-center">
+            <div>
                 <p>{message}</p>
                 <button
                     onClick={onClose}
-                    className="text-cream-100 hover:text-light-green-300"
+                    className="message-close"
                 >
                     ✕
                 </button>

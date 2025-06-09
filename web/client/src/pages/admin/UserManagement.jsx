@@ -6,7 +6,7 @@ import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
 import Sidebar from '../../components/layout/Sidebar';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function UserManagement() {
     const [users, setUsers] = useState([]);
@@ -27,18 +27,18 @@ function UserManagement() {
 
     const renderRow = (user) => (
         <>
-            <td className="px-4 py-2">{user.username}</td>
-            <td className="px-4 py-2">{user.email}</td>
-            <td className="px-4 py-2">{user.role}</td>
-            <td className="px-4 py-2">{new Date(user.updatedAt).toLocaleDateString()}</td>
+            <td>{user.username}</td>
+            <td>{user.email}</td>
+            <td>{user.role}</td>
+            <td>{new Date(user.updatedAt).toLocaleDateString()}</td>
         </>
     );
 
     return (
         <motion.div {...pageTransition} className="flex">
             <Sidebar role="admin" />
-            <div className="flex-1 p-4 ml-64">
-                <h1 className="text-2xl font-bold text-dark-green-900 mb-4">Manajemen Pengguna</h1>
+            <div className="content-with-sidebar">
+                <h1>Manajemen Pengguna</h1>
                 <ErrorMessage message={error} onClose={() => setError('')} />
                 {isLoading && <Spinner />}
                 <Card title="Daftar Pengguna">

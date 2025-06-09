@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function Education() {
     const [educations, setEducations] = useState([]);
@@ -22,15 +22,15 @@ function Education() {
     }, []);
 
     return (
-        <motion.div {...pageTransition} className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold text-dark-green-900 mb-4">Edukasi</h1>
+        <motion.div {...pageTransition} className="container">
+            <h1>Edukasi</h1>
             <ErrorMessage message={error} onClose={() => setError('')} />
             {isLoading && <Spinner />}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-3">
                 {educations.map((edu) => (
                     <Card key={edu.id} title={edu.title}>
-                        <p className="text-dark-green-900">{edu.content.substring(0, 100)}...</p>
-                        <p className="text-sm text-gray-600 mt-2">
+                        <p>{edu.content.substring(0, 100)}...</p>
+                        <p>
                             Kategori: {edu.category || 'N/A'} | Tanggal: {new Date(edu.date).toLocaleDateString()}
                         </p>
                     </Card>

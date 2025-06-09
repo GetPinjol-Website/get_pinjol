@@ -25,7 +25,7 @@ class AuthPresenter {
     try {
       this.view.setLoading(true);
       const response = await UserModel.login(credentials);
-      this.view.setToken(response.token);
+      this.view.setToken(true); // berhasil login
       this.view.setRole(response.role);
       this.view.showSuccess(response.message);
       this.view.navigate(response.role === 'admin' ? '/admin' : '/dashboard');
@@ -39,15 +39,12 @@ class AuthPresenter {
   // Memeriksa role pengguna
   async checkRole() {
     try {
-      this.view.setLoading(true);
       const role = await UserModel.checkRole();
       this.view.setRole(role);
       return role;
     } catch (error) {
       this.view.showError(error.message || 'Gagal memeriksa role');
       return null;
-    } finally {
-      this.view.setLoading(false);
     }
   }
 
@@ -55,11 +52,35 @@ class AuthPresenter {
   handleLogout() {
     try {
       UserModel.logout();
-      this.view.setToken(null);
+      this.view.setToken(false);
       this.view.setRole(null);
       this.view.navigate('/login');
     } catch (error) {
       this.view.showError(error.message || 'Gagal logout');
+    }
+  }
+
+  // Memeriksa status autentikasi
+  async checkAuthStatus(signal) {
+    try {
+      this.view.setLoading(true);
+      const token = await UserModel.getToken();
+      if (token) {
+        const role = await this.checkRole();
+        this.view.setToken(true);
+        this.view.setRole(role);
+      } else {
+        this.view.setToken(false);
+        this.view.setRole(null);
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        this.view.showError(error.message || 'Gagal memeriksa status autentikasi');
+        this.view.setToken(false);
+        this.view.setRole(null);
+      }
+    } finally {
+      this.view.setLoading(false);
     }
   }
 }

@@ -10,7 +10,7 @@ import Spinner from '../../components/common/Spinner';
 import { REPORT_CATEGORIES } from '../../utils/constants';
 import { isValidDate } from '../../utils/helpers';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function ReportForm() {
     const [formData, setFormData] = useState({
@@ -49,8 +49,8 @@ function ReportForm() {
     };
 
     return (
-        <motion.div {...pageTransition} className="container mx-auto max-w-md p-4">
-            <h1 className="text-2xl font-bold text-dark-green-900 mb-4">Buat Laporan</h1>
+        <motion.div {...pageTransition} className="container">
+            <h1>Buat Laporan</h1>
             <ErrorMessage message={error} onClose={() => setError('')} />
             <SuccessMessage message={success} onClose={() => setSuccess('')} />
             {isLoading && <Spinner />}
@@ -69,15 +69,14 @@ function ReportForm() {
                     onChange={handleChange}
                     required
                 />
-                <div className="mb-4">
-                    <label className="block text-dark-green-900 font-medium mb-1">
-                        Kategori<span className="text-red-500">*</span>
+                <div className="input-group">
+                    <label>
+                        Kategori<span className="required">*</span>
                     </label>
                     <select
                         name="category"
                         value={formData.category}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 bg-cream-200"
                         required
                     >
                         <option value="">Pilih Kategori</option>

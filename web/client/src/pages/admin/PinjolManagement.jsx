@@ -6,7 +6,7 @@ import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
 import Sidebar from '../../components/layout/Sidebar';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function PinjolManagement() {
     const [pinjols, setPinjols] = useState([]);
@@ -20,26 +20,24 @@ function PinjolManagement() {
     });
 
     useEffect(() => {
-        presenter.getAllPinjol();
+        presenter.getAllPinjols();
     }, []);
 
     const headers = ['Nama Pinjol', 'Prediksi', 'Aksi'];
 
     const renderRow = (pinjol) => (
         <>
-            <td className="px-4 py-2">{pinjol.name || 'N/A'}</td>
-            <td className="px-4 py-2">{pinjol.prediction || 'N/A'}</td>
-            <td className="px-4 py-2">
-                <button className="text-green-600 hover:underline">Edit</button>
-            </td>
+            <td>{pinjol.name || 'N/A'}</td>
+            <td>{pinjol.prediction || 'N/A'}</td>
+            <td><a href="#">Edit</a></td>
         </>
     );
 
     return (
         <motion.div {...pageTransition} className="flex">
             <Sidebar role="admin" />
-            <div className="flex-1 p-4 ml-64">
-                <h1 className="text-2xl font-bold text-dark-green-900 mb-4">Manajemen Pinjaman Online</h1>
+            <div className="content-with-sidebar">
+                <h1 className="container">Manajemen Pinjaman Online</h1>
                 <ErrorMessage message={error} onClose={() => setError('')} />
                 {isLoading && <Spinner />}
                 <Card title="Daftar Pinjol">

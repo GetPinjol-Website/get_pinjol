@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function Sidebar({ role }) {
     const adminLinks = [
@@ -21,12 +21,12 @@ function Sidebar({ role }) {
     const links = role === 'admin' ? adminLinks : userLinks;
 
     return (
-        <motion.aside {...pageTransition} className="bg-dark-green-800 text-cream-100 w-64 p-4 h-screen fixed">
-            <h2 className="text-xl font-bold mb-4">{role === 'admin' ? 'Admin Panel' : 'User Panel'}</h2>
+        <motion.aside {...pageTransition} className="sidebar">
+            <h2>{role === 'admin' ? 'Admin Panel' : 'User Panel'}</h2>
             <ul>
                 {links.map((link) => (
-                    <li key={link.path} className="mb-2">
-                        <Link to={link.path} className="hover:text-light-green-300">
+                    <li key={link.path}>
+                        <Link to={link.path}>
                             {link.label}
                         </Link>
                     </li>

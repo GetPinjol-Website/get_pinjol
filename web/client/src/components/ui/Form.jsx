@@ -9,7 +9,7 @@ function Form({ onSubmit, children, className }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className={`space-y-4 ${className}`}>
+        <form onSubmit={handleSubmit} className={className}>
             {children}
         </form>
     );

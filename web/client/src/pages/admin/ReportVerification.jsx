@@ -8,7 +8,7 @@ import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
 import Sidebar from '../../components/layout/Sidebar';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function ReportVerification() {
     const [reports, setReports] = useState([]);
@@ -36,19 +36,19 @@ function ReportVerification() {
 
     const renderRow = (report) => (
         <>
-            <td className="px-4 py-2">{report.appName}</td>
-            <td className="px-4 py-2">{report.category}</td>
-            <td className="px-4 py-2">{new Date(report.incidentDate).toLocaleDateString()}</td>
-            <td className="px-4 py-2">
+            <td>{report.appName}</td>
+            <td>{report.category}</td>
+            <td>{new Date(report.incidentDate).toLocaleDateString()}</td>
+            <td>
                 <Button
                     onClick={() => handleVerify(report.id, 'Diterima')}
-                    className="mr-2 bg-green-600"
+                    className="mr-2 btn"
                 >
                     Terima
                 </Button>
                 <Button
                     onClick={() => handleVerify(report.id, 'Ditolak')}
-                    className="bg-red-500"
+                    className="btn-danger"
                 >
                     Tolak
                 </Button>
@@ -59,8 +59,8 @@ function ReportVerification() {
     return (
         <motion.div {...pageTransition} className="flex">
             <Sidebar role="admin" />
-            <div className="flex-1 p-4 ml-64">
-                <h1 className="text-2xl font-bold text-dark-green-900 mb-4">Verifikasi Laporan</h1>
+            <div className="content-with-sidebar">
+                <h1>Verifikasi Laporan</h1>
                 <ErrorMessage message={error} onClose={() => setError('')} />
                 <SuccessMessage message={success} onClose={() => setSuccess('')} />
                 {isLoading && <Spinner />}

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import AuthPresenter from '../../presenters/AuthPresenter';
 import Button from './Button';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function Navbar({ isAuthenticated, role, setIsAuthenticated, setRole }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -53,41 +53,36 @@ function Navbar({ isAuthenticated, role, setIsAuthenticated, setRole }) {
     ];
 
     return (
-        <motion.nav {...pageTransition} className="bg-dark-green-900 text-cream-100">
-            <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-                <Link to="/" className="text-xl font-bold">
+        <motion.nav {...pageTransition} className="navbar">
+            <div className="container">
+                <Link to="/" className="navbar-brand">
                     Pinjol Report
                 </Link>
-                <div className="hidden md:flex space-x-4">
+                <div className="navbar-links">
                     {links.map((link) => (
-                        <Link
-                            key={link.path}
-                            to={link.path}
-                            className="hover:text-light-green-300"
-                        >
+                        <Link key={link.path} to={link.path}>
                             {link.label}
                         </Link>
                     ))}
                     {isAuthenticated && (
-                        <Button onClick={handleLogout} className="ml-4">
+                        <Button onClick={handleLogout}>
                             Logout
                         </Button>
                     )}
                 </div>
                 <button
-                    className="md:hidden text-cream-100"
+                    className="navbar-toggle"
                     onClick={toggleMobileMenu}
                 >
                     ☰
                 </button>
             </div>
             {isMobileMenuOpen && (
-                <div className="md:hidden bg-dark-green-800 p-4">
+                <div className="navbar-mobile">
                     {links.map((link) => (
                         <Link
                             key={link.path}
                             to={link.path}
-                            className="block py-2 hover:text-light-green-300"
                             onClick={toggleMobileMenu}
                         >
                             {link.label}
@@ -99,7 +94,6 @@ function Navbar({ isAuthenticated, role, setIsAuthenticated, setRole }) {
                                 handleLogout();
                                 toggleMobileMenu();
                             }}
-                            className="mt-2 w-full text-left"
                         >
                             Logout
                         </Button>

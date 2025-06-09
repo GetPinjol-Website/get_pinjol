@@ -5,7 +5,7 @@ import Table from '../../components/ui/Table';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations.jsx';
+import { pageTransition } from '../../utils/animations';
 
 function PinjolList() {
     const [pinjols, setPinjols] = useState([]);
@@ -26,17 +26,17 @@ function PinjolList() {
 
     const renderRow = (pinjol) => (
         <>
-            <td className="px-4 py-2">{pinjol.name || 'N/A'}</td>
-            <td className="px-4 py-2">{pinjol.prediction || 'N/A'}</td>
-            <td className="px-4 py-2">
-                <button className="text-green-600 hover:underline">Detail</button>
+            <td>{pinjol.name || 'N/A'}</td>
+            <td>{pinjol.prediction || 'N/A'}</td>
+            <td>
+                <a href="#">Detail</a>
             </td>
         </>
     );
 
     return (
-        <motion.div {...pageTransition} className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold text-dark-green-900 mb-4">Daftar Pinjaman Online</h1>
+        <motion.div {...pageTransition} className="container">
+            <h1>Daftar Pinjaman Online</h1>
             <ErrorMessage message={error} onClose={() => setError('')} />
             {isLoading && <Spinner />}
             <Card title="Daftar Pinjol">
