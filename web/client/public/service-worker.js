@@ -1,9 +1,10 @@
+// Impor Workbox jika digunakan
 import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
-// Precaching aset dari manifest Vite
-precacheAndRoute(self.__WB_MANIFEST);
+// Precaching aset (dengan fallback jika __WB_MANIFEST tidak ada)
+precacheAndRoute(self.__WB_MANIFEST || []);
 
 // Cache strategi untuk API (NetworkFirst)
 registerRoute(
@@ -12,9 +13,7 @@ registerRoute(
     cacheName: 'api-cache',
     plugins: [
       {
-        cacheableResponse: {
-          statuses: [0, 200],
-        },
+        cacheableResponse: { statuses: [0, 200] },
       },
     ],
   })
@@ -27,9 +26,7 @@ registerRoute(
     cacheName: 'image-cache',
     plugins: [
       {
-        cacheableResponse: {
-          statuses: [0, 200],
-        },
+        cacheableResponse: { statuses: [0, 200] },
       },
     ],
   })
@@ -39,9 +36,7 @@ registerRoute(
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+      if (cachedResponse) return cachedResponse;
       return fetch(event.request).catch((error) => {
         console.error('Fetch gagal:', error);
         return new Response(
@@ -49,10 +44,7 @@ self.addEventListener('fetch', (event) => {
             status: 'error',
             message: 'Tidak ada koneksi jaringan. Silakan coba lagi.',
           }),
-          {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' },
-          }
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
         );
       });
     })
