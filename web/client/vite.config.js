@@ -8,8 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       srcDir: 'public',
-      filename: 'sw.js', // Sesuaikan dengan nama file di public
-      strategies: 'injectManifest', // Gunakan manifest kustom yang diinjeksikan
+      filename: 'sw.js', 
+      strategies: 'injectManifest',
       includeAssets: ['favicon.ico', 'assets/icons/*.png'],
       manifest: {
         name: 'Aplikasi Laporan Pinjol',
@@ -48,8 +48,8 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: true, // Aktifkan Service Worker di mode development
-        type: 'module', // Gunakan tipe module untuk development
+        enabled: true, 
+        type: 'module', 
       },
     }),
   ],
