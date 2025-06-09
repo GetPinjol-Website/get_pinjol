@@ -13,7 +13,7 @@ import Modal from '../../components/common/Modal';
 import { EDUCATION_CATEGORIES } from '../../utils/constants';
 import { isValidDate } from '../../utils/helpers';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { pageTransition } from '../../utils/animations.jsx';
 
 function EducationManagement() {
     const [educations, setEducations] = useState([]);

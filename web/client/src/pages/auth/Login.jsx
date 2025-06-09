@@ -9,7 +9,7 @@ import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
 import { isValidEmail } from '../../utils/helpers';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { pageTransition } from '../../utils/animations.jsx';
 
 function Login({ setIsAuthenticated, setRole }) {
     const [formData, setFormData] = useState({ username: '', password: '' });

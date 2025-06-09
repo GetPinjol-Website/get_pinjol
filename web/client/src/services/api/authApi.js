@@ -90,7 +90,9 @@ export const getUserById = async (id) => {
 export const checkRole = async (token) => {
   try {
     const response = await axios.get(`${BASE_URL}/check-role`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return {
       status: response.data.status,

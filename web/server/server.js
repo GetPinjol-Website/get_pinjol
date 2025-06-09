@@ -7,7 +7,15 @@ const routes = require('./routes');
 const init = async () => {
   const server = Hapi.server({
     port: 9000,
-    host: 'localhost'
+    host: 'localhost',
+    routes: {
+      cors: {
+        origin: ['http://localhost:5173'], 
+        headers: ['Accept', 'Content-Type', 'Authorization', 'X-Requested-With'], 
+        credentials: true,
+        additionalHeaders: ['X-Requested-With'],
+      },
+    },
   });
 
   await connectDB();

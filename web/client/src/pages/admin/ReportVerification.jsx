@@ -8,7 +8,7 @@ import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
 import Sidebar from '../../components/layout/Sidebar';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { pageTransition } from '../../utils/animations.jsx';
 
 function ReportVerification() {
     const [reports, setReports] = useState([]);

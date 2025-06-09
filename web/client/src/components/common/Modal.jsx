@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { modalAnimation } from '../../utils/animations';
+import { modalAnimation } from '../../utils/animations.jsx';
 
 function Modal({ isOpen, onClose, title, children }) {
     if (!isOpen) return null;

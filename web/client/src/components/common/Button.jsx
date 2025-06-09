@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { buttonHover } from '../../utils/animations';
+import { buttonHover } from '../../utils/animations.jsx';
 
 function Button({ children, onClick, disabled, className, type = 'button' }) {
     return (

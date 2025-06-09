@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { pageTransition } from '../../utils/animations.jsx';
 
 function Sidebar({ role }) {
     const adminLinks = [

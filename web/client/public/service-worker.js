@@ -13,7 +13,7 @@ registerRoute(
     plugins: [
       {
         cacheableResponse: {
-          statuses: [0, 200], // Cache respons sukses dan opaque
+          statuses: [0, 200],
         },
       },
     ],
@@ -35,7 +35,7 @@ registerRoute(
   })
 );
 
-// Event listener untuk menangani error caching
+// Event listener untuk menangani fetch
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {

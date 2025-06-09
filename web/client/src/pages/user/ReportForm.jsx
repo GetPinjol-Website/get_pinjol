@@ -10,7 +10,7 @@ import Spinner from '../../components/common/Spinner';
 import { REPORT_CATEGORIES } from '../../utils/constants';
 import { isValidDate } from '../../utils/helpers';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { pageTransition } from '../../utils/animations.jsx';
 
 function ReportForm() {
     const [formData, setFormData] = useState({

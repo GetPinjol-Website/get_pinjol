@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { modalAnimation } from '../../utils/animations';
+import { modalAnimation } from '../../utils/animations.jsx';
 
 function SuccessMessage({ message, onClose }) {
     if (!message) return null;

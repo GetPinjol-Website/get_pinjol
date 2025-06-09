@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import AuthPresenter from '../../presenters/AuthPresenter';
 import Button from './Button';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { pageTransition } from '../../utils/animations.jsx';
 
 function Navbar({ isAuthenticated, role, setIsAuthenticated, setRole }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

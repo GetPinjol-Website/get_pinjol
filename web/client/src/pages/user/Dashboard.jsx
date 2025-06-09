@@ -7,7 +7,7 @@ import Button from '../../components/common/Button';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { pageTransition } from '../../utils/animations.jsx';
 
 function Dashboard() {
     const [reports, setReports] = useState([]);
