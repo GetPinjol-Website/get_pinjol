@@ -7,68 +7,57 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      srcDir: 'public',
+      filename: 'sw.js', // Sesuaikan dengan nama file di public
+      strategies: 'injectManifest', // Gunakan manifest kustom yang diinjeksikan
       includeAssets: ['favicon.ico', 'assets/icons/*.png'],
       manifest: {
         name: 'Aplikasi Laporan Pinjol',
         short_name: 'Pinjol Report',
-        theme_color: '#18230F', // dark-green-900 from tailwind.config.js
-        background_color: '#FFFDF6', // cream-100 from tailwind.config.js
+        theme_color: '#18230F',
+        background_color: '#FFFDF6',
         display: 'standalone',
         scope: '/',
         start_url: '/',
         icons: [
-          {
-            src: '/assets/icons/icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: '/assets/icons/icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
+          { src: '/assets/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/assets/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,jpg,svg}'],
+        globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico}'],
         runtimeCaching: [
           {
-            urlPattern: /^http:\/\/localhost:9000\/.*/,
+            urlPattern: ({ url }) => url.origin === 'http://localhost:9000' && !url.pathname.includes('/auth'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-              },
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 },
             },
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|ico)$/,
-            handler: 'CacheFirst',
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'image-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-              },
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 },
             },
           },
         ],
+      },
+      devOptions: {
+        enabled: true, // Aktifkan Service Worker di mode development
+        type: 'module', // Gunakan tipe module untuk development
       },
     }),
   ],
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:9000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
+      '/api': { target: 'http://localhost:9000', changeOrigin: true, rewrite: (path) => path.replace(/^\/api/, '') },
     },
-    hmr: {
-      overlay: false, // Nonaktifkan overlay error
-    },
+    hmr: { overlay: false },
   },
 });
