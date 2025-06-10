@@ -8,7 +8,7 @@ function Button({ children, onClick, disabled, className, type = 'button' }) {
             type={type}
             onClick={onClick}
             disabled={disabled}
-            className={`btn ${disabled ? 'disabled' : ''} ${className || ''}`}
+            className={`inline-flex items-center px-4 py-2 bg-pinjol-dark-3 text-pinjol-light-1 rounded-md font-medium hover:bg-pinjol-dark-4 transition-colors duration-300 ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className || ''}`}
         >
             {children}
         </motion.button>

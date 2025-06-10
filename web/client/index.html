@@ -6,7 +6,34 @@
   <meta name="theme-color" content="#18230F" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" href="/favicon.ico" />
-  <title>Aplikasi Laporan Pinjol</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      content: [],
+      theme: {
+        extend: {
+          colors: {
+            'pinjol-dark-1': '#18230F',
+            'pinjol-dark-2': '#27391C',
+            'pinjol-dark-3': '#255F38',
+            'pinjol-dark-4': '#1F7D53',
+            'pinjol-light-1': '#ECFAE5',
+            'pinjol-light-2': '#DDF6D2',
+            'pinjol-light-3': '#CAE8BD',
+            'pinjol-light-4': '#B0DB9C',
+          },
+        },
+      },
+      plugins: [],
+    }
+  </script>
+  <title>GetPinjol - Aplikasi Laporan Pinjol</title>
 </head>
 <body>
   <div id="root"></div>

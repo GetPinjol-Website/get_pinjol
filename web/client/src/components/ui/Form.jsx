@@ -4,7 +4,13 @@ function Form({ onSubmit, children, className }) {
         try {
             onSubmit(e);
         } catch (error) {
-            alert(error.message || 'Gagal mengirimkan form');
+            window.Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Form submission failed',
+                confirmButtonColor: '#255F38',
+                background: '#ECFAE5',
+            });
         }
     };
 
