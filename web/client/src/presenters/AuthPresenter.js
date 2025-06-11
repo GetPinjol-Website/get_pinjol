@@ -24,18 +24,23 @@ class AuthPresenter {
   async handleLogin(credentials) {
     try {
       this.view.setLoading(true);
-      const response = await UserModel.login(credentials);
-      console.log('Respons login di AuthPresenter:', response);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message || 'Gagal login');
+      const response = await AuthModel.login(credentials); // Asumsikan ini mengembalikan token & role
+      const { token, role } = response;
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+
+      this.view.setToken(true);
+      this.view.setRole(role);
+      this.view.showSuccess('Login berhasil!');
+
+      if (role === 'admin') {
+        this.view.navigate('/admin');
+      } else {
+        this.view.navigate('/dashboard');
       }
-      this.view.setToken(true); // berhasil login
-      this.view.setRole(response.role);
-      this.view.showSuccess(response.message);
-      this.view.navigate(response.role === 'admin' ? '/admin' : '/dashboard');
     } catch (error) {
-      console.error('Error login di AuthPresenter:', error.message);
-      this.view.showError(error.message || 'Gagal login');
+      this.view.showError(error.message || 'Login gagal');
     } finally {
       this.view.setLoading(false);
     }
