@@ -7,12 +7,12 @@ import Button from '../../components/common/Button';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
+import FullScreenSection from '../../components/ui/FullScreenSection';
 import { isValidEmail } from '../../utils/helpers';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
 
-function Login({ setIsAuthenticated, setRole }) {
-    const [formData, setFormData] = useState({ username: '', password: '' });
+function Login() {
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -22,9 +22,9 @@ function Login({ setIsAuthenticated, setRole }) {
         setLoading: setIsLoading,
         showError: setError,
         showSuccess: setSuccess,
-        setToken: setIsAuthenticated,
-        setRole,
         navigate,
+        setToken: () => { }, // Placeholder untuk state token
+        setRole: () => { }, // Placeholder untuk state role
     });
 
     const handleChange = (e) => {
@@ -32,40 +32,98 @@ function Login({ setIsAuthenticated, setRole }) {
     };
 
     const handleSubmit = async () => {
-        if (!formData.username || !formData.password) {
-            setError('Username dan password wajib diisi');
+        if (!formData.email || !formData.password) {
+            setError('Email dan password wajib diisi');
+            return;
+        }
+        if (!isValidEmail(formData.email)) {
+            setError('Email tidak valid');
             return;
         }
         await presenter.handleLogin(formData);
     };
 
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+    };
+
     return (
-        <motion.div {...pageTransition} className="container">
-            <h1>Login</h1>
-            <ErrorMessage message={error} onClose={() => setError('')} />
-            <SuccessMessage message={success} onClose={() => setSuccess('')} />
-            {isLoading && <Spinner />}
-            <Form onSubmit={handleSubmit}>
-                <Input
-                    label="Username atau Email"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    required
-                />
-                <Input
-                    label="Password"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
-                <Button type="submit" disabled={isLoading}>
-                    Login
-                </Button>
-            </Form>
-        </motion.div>
+        <FullScreenSection id="login" className="bg-pinjol-light-1 relative overflow-hidden">
+            <div
+                className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"
+            ></div>
+            <motion.div
+                className="relative z-10 bg-pinjol-light-2 p-8 rounded-lg shadow-lg max-w-md w-full mx-auto font-roboto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                <motion.h1
+                    className="text-3xl font-bold text-pinjol-dark-3 mb-6 text-center"
+                    variants={itemVariants}
+                >
+                    Masuk ke Get Pinjol
+                </motion.h1>
+                <motion.p
+                    className="text-pinjol-dark-1 mb-8 text-center"
+                    variants={itemVariants}
+                >
+                    Akses platform keamanan pinjol terbaik untuk melindungi keuangan Anda!
+                </motion.p>
+                <ErrorMessage message={error} onClose={() => setError('')} />
+                <SuccessMessage message={success} onClose={() => setSuccess('')} />
+                {isLoading && <Spinner />}
+                <Form onSubmit={handleSubmit}>
+                    <motion.div className="mb-4" variants={itemVariants}>
+                        <label className="block text-pinjol-dark-2 font-medium mb-2">
+                            <i className="fas fa-envelope mr-2"></i>Email
+                        </label>
+                        <Input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Masukkan email Anda"
+                            className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                            required
+                        />
+                    </motion.div>
+                    <motion.div className="mb-6" variants={itemVariants}>
+                        <label className="block text-pinjol-dark-2 font-medium mb-2">
+                            <i className="fas fa-lock mr-2"></i>Password
+                        </label>
+                        <Input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Masukkan password Anda"
+                            className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                            required
+                        />
+                    </motion.div>
+                    <motion.div variants={itemVariants}>
+                        <Button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full px-6 py-3 bg-pinjol-dark-3 text-white rounded-lg font-medium hover:bg-pinjol-dark-2 transition-colors flex items-center justify-center"
+                        >
+                            <i className="fas fa-sign-in-alt mr-2"></i>Masuk
+                        </Button>
+                    </motion.div>
+                </Form>
+                <motion.p
+                    className="mt-4 text-center text-pinjol-dark-1"
+                    variants={itemVariants}
+                >
+                    Belum punya akun?{' '}
+                    <a href="/register" className="text-pinjol-dark-3 hover:underline">
+                        Daftar sekarang
+                    </a>
+                </motion.p>
+            </motion.div>
+        </FullScreenSection>
     );
 }
 
