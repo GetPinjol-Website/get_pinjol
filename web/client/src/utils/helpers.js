@@ -10,7 +10,7 @@ export const isValidUsername = (username) => {
   return usernameRegex.test(username);
 };
 
-// Helper untuk memvalidasi format tanggal (YYYY-MM-DD atau ISO 8601)
+// Helper untuk memvalidasi format tanggal
 export const isValidDate = (dateString) => {
   const date = new Date(dateString);
   return !isNaN(date.getTime());
@@ -33,4 +33,14 @@ export const getErrorMessage = (error) => {
 // Helper untuk memeriksa status koneksi jaringan
 export const isOnline = () => {
   return navigator.onLine;
+};
+
+// Helper untuk memvalidasi format URL
+export const isValidUrl = (url) => {
+  try {
+    new URL(url);
+    return url.match(/^(https?:\/\/[^\s$.?#].[^\s]*)$/i);
+  } catch {
+    return false;
+  }
 };

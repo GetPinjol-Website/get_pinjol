@@ -7,7 +7,7 @@ import Button from '../../components/common/Button';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
-import { isValidEmail, isValidUsername } from '../../utils/helpers';
+import { isValidUsername } from '../../utils/helpers';
 import { motion } from 'framer-motion';
 import { pageTransition } from '../../utils/animations';
 
@@ -16,6 +16,8 @@ function Login() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [role, setRole] = useState(null);
     const navigate = useNavigate();
 
     const presenter = new AuthPresenter({
@@ -23,8 +25,6 @@ function Login() {
         showError: setError,
         showSuccess: setSuccess,
         navigate,
-        // setToken: () => { },
-        // setRole: () => { },
         setToken: setIsAuthenticated,
         setRole: setRole,
     });
@@ -35,7 +35,7 @@ function Login() {
 
     const handleSubmit = async () => {
         if (!formData.username || !formData.password) {
-            setError('username dan password wajib diisi');
+            setError('Username dan password wajib diisi');
             return;
         }
         if (!isValidUsername(formData.username)) {
@@ -77,10 +77,10 @@ function Login() {
                     <Form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label className="block text-pinjol-dark-2 font-medium mb-2">
-                                <i className="fas fa-envelope mr-2"></i>Username
+                                <i className="fas fa-user mr-2"></i>Username
                             </label>
                             <Input
-                                type="username"
+                                type="text"
                                 name="username"
                                 value={formData.username}
                                 onChange={handleChange}

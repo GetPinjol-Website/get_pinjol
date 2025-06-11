@@ -1,65 +1,151 @@
-import { createWebReport, createAppReport, getTopReports, getReportById, getAllReports } from '../services/api/reportApi';
-import { saveReport, getReport, getAllReportsDB, deleteReport } from '../services/indexedDB/reportDB';
+import {
+  createWebReport,
+  createAppReport,
+  updateWebReport,
+  updateAppReport,
+  deleteWebReport,
+  deleteAppReport,
+  getReportById,
+  getAllReports,
+  getUserReports,
+} from '../services/api/reportApi';
+import {
+  saveReport,
+  getReport,
+  getAllReportsDB,
+  deleteReport,
+  syncOfflineReports,
+} from '../services/indexedDB/reportDB';
+import { REPORT_TYPES } from '../utils/constants';
 
-// Model untuk mengelola data laporan
 class ReportModel {
-  // Membuat laporan berbasis web
   static async createWebReport(reportData, token) {
     try {
       const response = await createWebReport(reportData, token);
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
-      // Simpan ke IndexedDB
-      await saveReport(response.data);
+      await saveReport(response.data, REPORT_TYPES.WEB);
       return response.data;
     } catch (error) {
-      // Coba ambil dari IndexedDB jika offline
       if (error.message.includes('Koneksi jaringan gagal')) {
-        const offlineReport = { ...reportData, id: `offline-${Date.now()}`, userId: 'unknown', updatedAt: new Date().toISOString() };
-        await saveReport(offlineReport);
+        const offlineReport = {
+          ...reportData,
+          id: `offline-${Date.now()}`,
+          type: REPORT_TYPES.WEB,
+          updatedAt: new Date().toISOString(),
+        };
+        await saveReport(offlineReport, REPORT_TYPES.WEB);
         return offlineReport;
       }
       throw new Error(error.message || 'Gagal membuat laporan web');
     }
   }
 
-  // Membuat laporan berbasis aplikasi
   static async createAppReport(reportData, token) {
     try {
       const response = await createAppReport(reportData, token);
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
-      // Simpan ke IndexedDB
-      await saveReport(response.data);
+      await saveReport(response.data, REPORT_TYPES.APP);
       return response.data;
     } catch (error) {
-      // Coba ambil dari IndexedDB jika offline
       if (error.message.includes('Koneksi jaringan gagal')) {
-        const offlineReport = { ...reportData, id: `offline-${Date.now()}`, userId: 'unknown', updatedAt: new Date().toISOString() };
-        await saveReport(offlineReport);
+        const offlineReport = {
+          ...reportData,
+          id: `offline-${Date.now()}`,
+          type: REPORT_TYPES.APP,
+          updatedAt: new Date().toISOString(),
+        };
+        await saveReport(offlineReport, REPORT_TYPES.APP);
         return offlineReport;
       }
       throw new Error(error.message || 'Gagal membuat laporan aplikasi');
     }
   }
 
-  // Mendapatkan 5 kategori laporan teratas
-  static async getTopReports() {
+  static async updateWebReport(id, reportData, token) {
     try {
-      const response = await getTopReports();
+      const response = await updateWebReport(id, reportData, token);
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
+      await saveReport(response.data, REPORT_TYPES.WEB);
       return response.data;
     } catch (error) {
-      throw new Error(error.message || 'Gagal mengambil laporan teratas');
+      if (error.message.includes('Koneksi jaringan gagal')) {
+        const offlineReport = {
+          ...reportData,
+          id,
+          type: REPORT_TYPES.WEB,
+          updatedAt: new Date().toISOString(),
+        };
+        await saveReport(offlineReport, REPORT_TYPES.WEB);
+        return offlineReport;
+      }
+      throw new Error(error.message || 'Gagal memperbarui laporan web');
     }
   }
 
-  // Mendapatkan laporan berdasarkan ID
-  static async getReportById(id, token) {
+  static async updateAppReport(id, reportData, token) {
+    try {
+      const response = await updateAppReport(id, reportData, token);
+      if (response.status !== 'sukses') {
+        throw new Error(response.message);
+      }
+      await saveReport(response.data, REPORT_TYPES.APP);
+      return response.data;
+    } catch (error) {
+      if (error.message.includes('Koneksi jaringan gagal')) {
+        const offlineReport = {
+          ...reportData,
+          id,
+          type: REPORT_TYPES.APP,
+          updatedAt: new Date().toISOString(),
+        };
+        await saveReport(offlineReport, REPORT_TYPES.APP);
+        return offlineReport;
+      }
+      throw new Error(error.message || 'Gagal memperbarui laporan aplikasi');
+    }
+  }
+
+  static async deleteWebReport(id, token) {
+    try {
+      const response = await deleteWebReport(id, token);
+      if (response.status !== 'sukses') {
+        throw new Error(response.message);
+      }
+      await deleteReport(id, REPORT_TYPES.WEB);
+      return true;
+    } catch (error) {
+      if (error.message.includes('Koneksi jaringan gagal')) {
+        await deleteReport(id, REPORT_TYPES.WEB);
+        return true;
+      }
+      throw new Error(error.message || 'Gagal menghapus laporan web');
+    }
+  }
+
+  static async deleteAppReport(id, token) {
+    try {
+      const response = await deleteAppReport(id, token);
+      if (response.status !== 'sukses') {
+        throw new Error(response.message);
+      }
+      await deleteReport(id, REPORT_TYPES.APP);
+      return true;
+    } catch (error) {
+      if (error.message.includes('Koneksi jaringan gagal')) {
+        await deleteReport(id, REPORT_TYPES.APP);
+        return true;
+      }
+      throw new Error(error.message || 'Gagal menghapus laporan aplikasi');
+    }
+  }
+
+  static async getReportById(id, token, type = REPORT_TYPES.WEB) {
     try {
       const response = await getReportById(id, token);
       if (response.status !== 'sukses') {
@@ -67,43 +153,60 @@ class ReportModel {
       }
       return response.data;
     } catch (error) {
-      // Coba ambil dari IndexedDB jika offline
       if (error.message.includes('Koneksi jaringan gagal')) {
-        const report = await getReport(id);
+        const report = await getReport(id, type);
         if (report) return report;
       }
       throw new Error(error.message || 'Gagal mengambil laporan');
     }
   }
 
-  // Mendapatkan semua laporan dengan filter
-  static async getAllReports(filters = {}) {
+  static async getAllReports(filters = {}, token = null) {
     try {
-      const response = await getAllReports(filters);
+      const response = await getAllReports(filters, token);
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
       return response.data;
     } catch (error) {
-      // Coba ambil dari IndexedDB jika offline
       if (error.message.includes('Koneksi jaringan gagal')) {
-        const reports = await getAllReportsDB();
+        const type = filters.type || REPORT_TYPES.WEB;
+        const reports = await getAllReportsDB(type);
         return reports.filter((report) =>
           (!filters.appName || report.appName.toLowerCase().includes(filters.appName.toLowerCase())) &&
-          (!filters.category || report.category === filters.category)
+          (!filters.category || report.category.includes(filters.category))
         );
       }
       throw new Error(error.message || 'Gagal mengambil daftar laporan');
     }
   }
 
-  // Menghapus laporan (opsional, jika diperlukan)
-  static async deleteReport(id) {
+  static async getUserReports(filters = {}, token) {
     try {
-      await deleteReport(id);
+      const response = await getUserReports(filters, token);
+      if (response.status !== 'sukses') {
+        throw new Error(response.message);
+      }
+      return response.data;
+    } catch (error) {
+      if (error.message.includes('Koneksi jaringan gagal')) {
+        const type = filters.type || REPORT_TYPES.WEB;
+        const reports = await getAllReportsDB(type);
+        return reports.filter((report) =>
+          (!filters.appName || report.appName.toLowerCase().includes(filters.appName.toLowerCase())) &&
+          (!filters.category || report.category.includes(filters.category))
+        );
+      }
+      throw new Error(error.message || 'Gagal mengambil daftar laporan pengguna');
+    }
+  }
+
+  static async syncOfflineReports(token) {
+    try {
+      await syncOfflineReports(token);
       return true;
     } catch (error) {
-      throw new Error(error.message || 'Gagal menghapus laporan');
+      throw new Error(error.message || 'Gagal menyinkronkan laporan offline');
     }
   }
 }

@@ -3,24 +3,34 @@
 const { registerHandler, loginHandler, getAllUsers, checkRoleHandler } = require('./handlers/authHandler');
 const { createEducation, getAllEducation, getEducationById, updateEducation, deleteEducation } = require('./handlers/educationHandler');
 const { getPinjolPrediction, getAllPinjol } = require('./handlers/pinjolHandler');
-const { createReportWeb, getTopReports, createReportApp, getReportById, getAllReports } = require('./handlers/reportHandler');
+const {
+  createReportWeb,
+  createReportApp,
+  getAllReports,
+  getAllReportsByUser,
+  getReportById,
+  updateReportWeb,
+  updateReportApp,
+  deleteReportWeb,
+  deleteReportApp,
+} = require('./handlers/reportHandler');
 const User = require('./models/user');
 
 const routes = [
   {
     method: 'POST',
     path: '/register',
-    handler: registerHandler
+    handler: registerHandler,
   },
   {
     method: 'POST',
     path: '/login',
-    handler: loginHandler
+    handler: loginHandler,
   },
   {
     method: 'GET',
     path: '/users',
-    handler: getAllUsers
+    handler: getAllUsers,
   },
   {
     method: 'GET',
@@ -41,73 +51,93 @@ const routes = [
       } catch (error) {
         return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
       }
-    }
+    },
   },
   {
     method: 'POST',
     path: '/education',
-    handler: createEducation
+    handler: createEducation,
   },
   {
     method: 'GET',
     path: '/education',
-    handler: getAllEducation
+    handler: getAllEducation,
   },
   {
     method: 'GET',
     path: '/education/{id}',
-    handler: getEducationById
+    handler: getEducationById,
   },
   {
     method: 'PUT',
     path: '/education/{id}',
-    handler: updateEducation
+    handler: updateEducation,
   },
   {
     method: 'DELETE',
     path: '/education/{id}',
-    handler: deleteEducation
+    handler: deleteEducation,
   },
   {
     method: 'GET',
     path: '/pinjol',
-    handler: getPinjolPrediction
+    handler: getPinjolPrediction,
   },
   {
     method: 'GET',
     path: '/pinjols',
-    handler: getAllPinjol
+    handler: getAllPinjol,
   },
   {
     method: 'POST',
     path: '/report/web',
-    handler: createReportWeb
-  },
-  {
-    method: 'GET',
-    path: '/report/top',
-    handler: getTopReports
+    handler: createReportWeb,
   },
   {
     method: 'POST',
     path: '/report/app',
-    handler: createReportApp
-  },
-  {
-    method: 'GET',
-    path: '/report/{id}',
-    handler: getReportById
+    handler: createReportApp,
   },
   {
     method: 'GET',
     path: '/reports',
-    handler: getAllReports
+    handler: getAllReports,
+  },
+  {
+    method: 'GET',
+    path: '/reports/user',
+    handler: getAllReportsByUser,
+  },
+  {
+    method: 'GET',
+    path: '/report/{id}',
+    handler: getReportById,
+  },
+  {
+    method: 'PUT',
+    path: '/report/web/{id}',
+    handler: updateReportWeb,
+  },
+  {
+    method: 'PUT',
+    path: '/report/app/{id}',
+    handler: updateReportApp,
+  },
+  {
+    method: 'DELETE',
+    path: '/report/web/{id}',
+    handler: deleteReportWeb,
+  },
+  {
+    method: 'DELETE',
+    path: '/report/app/{id}',
+    handler: deleteReportApp,
   },
   {
     method: 'GET',
     path: '/check-role',
-    handler: checkRoleHandler
-  }
+    handler: checkRoleHandler,
+  },
 ];
 
 module.exports = routes;

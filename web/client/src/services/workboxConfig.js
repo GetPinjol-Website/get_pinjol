@@ -1,61 +1,78 @@
 import { registerRoute } from 'workbox-routing';
 import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { precacheAndRoute } from 'workbox-precaching';
+import { Queue } from 'workbox-background-sync';
 
-// Precaching aset dari manifest Vite
 precacheAndRoute(self.__WB_MANIFEST);
 
-// Cache strategi untuk API (NetworkFirst)
+const reportQueue = new Queue('reportQueue', {
+  onSync: async ({ queue }) => {
+    let entry;
+    while ((entry = await queue.shiftRequest())) {
+      try {
+        await fetch(entry.request);
+      } catch (error) {
+        await queue.unshiftRequest(entry);
+        throw new Error('Queue sync failed');
+      }
+    }
+  },
+});
+
+registerRoute(
+  ({ url }) => url.origin === 'http://localhost:9000' && url.pathname.startsWith('/report'),
+  new NetworkFirst({
+    cacheName: 'api-report-cache',
+    plugins: [
+      {
+        cacheableResponse: { statuses: [0, 200] },
+      },
+      {
+        fetchDidFail: async ({ request }) => {
+          await reportQueue.pushRequest({ request });
+        },
+      },
+    ],
+  })
+);
+
 registerRoute(
   ({ url }) => url.origin === 'http://localhost:9000',
   new NetworkFirst({
     cacheName: 'api-cache',
     plugins: [
       {
-        cacheableResponse: {
-          statuses: [0, 200], // Cache respons sukses dan opaque
-        },
+        cacheableResponse: { statuses: [0, 200] },
       },
     ],
   })
 );
 
-// Cache strategi untuk gambar (StaleWhileRevalidate)
 registerRoute(
   ({ request }) => request.destination === 'image',
   new StaleWhileRevalidate({
     cacheName: 'image-cache',
     plugins: [
       {
-        cacheableResponse: {
-          statuses: [0, 200],
-        },
+        cacheableResponse: { statuses: [0, 200] },
       },
     ],
   })
 );
 
-// Event listener untuk menangani error caching
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).catch((error) => {
-        console.error('Fetch gagal:', error);
-        // Kembalikan respons offline placeholder jika diperlukan
-        return new Response(
-          JSON.stringify({
-            status: 'error',
-            message: 'Tidak ada koneksi jaringan. Silakan coba lagi.',
-          }),
-          {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      });
-    })
-  );
+  if (!navigator.onLine && event.request.url.includes('/report')) {
+    event.respondWith(
+      new Response(
+        JSON.stringify({
+          status: 'error',
+          message: 'Anda sedang offline. Permintaan akan disinkronkan saat online.',
+        }),
+        {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    );
+  }
 });
