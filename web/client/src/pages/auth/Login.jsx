@@ -49,7 +49,7 @@ function Login() {
     };
 
     return (
-        <FullScreenSection id="login" className="bg-pinjol-light-1 relative overflow-hidden">
+        <FullScreenSection id="login" className="bg-pinjol-light-1 relative overflow-hidden py-[15%] sm:py-[8%]">
             <div
                 className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"
             ></div>
