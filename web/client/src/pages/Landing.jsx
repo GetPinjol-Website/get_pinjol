@@ -59,89 +59,251 @@ function Landing() {
         setCheckInput('');
     };
 
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+    };
+
     return (
         <div className="bg-pinjol-light-1 font-roboto">
-            <FullScreenSection id="hero" className="bg-gradient-to-b from-pinjol-dark-4 to-pinjol-dark-3 text-pinjol-light-1 flex items-center justify-center">
-                <div className="text-center max-w-4xl">
-                    <img src="/logo.png" alt="Get Pinjol Logo" className="mx-auto h-20 mb-6 animate-pulse" />
-                    <h1 className="text-5xl md:text-6xl font-bold mb-4">Pendeteksi Keamanan Pinjol</h1>
-                    <p className="text-lg md:text-xl mb-6 max-w-2xl mx-auto">
-                        Lindungi keuangan Anda dari pinjaman online berisiko dengan platform canggih kami! Get Pinjol membantu Anda memverifikasi keamanan aplikasi pinjaman, mencegah penipuan, dan memberikan edukasi finansial yang terpercaya.
-                    </p>
-                    <Button
-                        as="a"
-                        href="#checker"
-                        className="inline-flex items-center px-6 py-3 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition-colors"
+            <FullScreenSection id="hero" className="bg-gradient-to-b from-pinjol-dark-4 to-pinjol-dark-3 text-white flex items-center justify-center relative">
+                <div className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center" style={{ filter: 'blur(4px)' }}></div>
+                <div className="absolute inset-0 bg-pinjol-dark-1 bg-opacity-70"></div>
+                <div className="relative z-10 text-center max-w-4xl space-y-10">
+                    <motion.img
+                        src="/logo.png"
+                        alt="Get Pinjol Logo"
+                        className="mx-auto h-20 mb-8 animate-pulse"
+                        variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                    />
+                    <motion.h1
+                        className="text-5xl md:text-6xl font-bold mb-8 drop-shadow-lg"
+                        variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        custom={0.2}
                     >
-                        <i className="fas fa-shield-alt mr-2"></i> Mulai Pengecekan Sekarang
-                    </Button>
-                </div>
-                <div className="absolute right-0 top-0 mt-16 mr-16">
-                    <img src="/getpinjol-security-shield.jpg" alt="Security Shield" className="w-96 h-auto rounded-lg shadow-lg" />
+                        Pendeteksi Keamanan Pinjol
+                    </motion.h1>
+                    <motion.p
+                        className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md"
+                        variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        custom={0.4}
+                    >
+                        Lindungi keuangan Anda dari pinjaman online berisiko dengan platform canggih kami! Get Pinjol membantu Anda memverifikasi keamanan aplikasi pinjaman, mencegah penipuan, dan memberikan edukasi finansial yang terpercaya.
+                    </motion.p>
+                    <motion.div
+                        variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        custom={0.6}
+                    >
+                        <Button
+                            as="a"
+                            href="#checker"
+                            className="inline-flex items-center px-6 py-3 bg-black bg-opacity-80 text-white rounded-md font-medium hover:bg-gray-800 hover:bg-opacity-100 transition-colors drop-shadow-md"
+                        >
+                            <i className="fas fa-shield-alt mr-2"></i> Mulai Pengecekan Sekarang
+                        </Button>
+                    </motion.div>
                 </div>
             </FullScreenSection>
 
             <FullScreenSection id="features" className="bg-pinjol-light-1 text-pinjol-dark-1 py-16">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-4xl font-bold text-pinjol-dark-3 mb-6 text-center">Fitur Unggulan</h2>
-                    <div className="flex flex-col md:flex-row items-center justify-between">
-                        <div className="md:w-1/2 mb-8 md:mb-0">
-                            <p className="text-lg mb-6 max-w-lg">
-                                Get Pinjol menawarkan analisis real-time untuk mendeteksi pinjaman online aman, laporan komunitas, dan panduan edukasi finansial. Lindungi diri Anda dari penipuan dengan data terpercaya!
+                    <h2 className="text-4xl font-bold text-pinjol-dark-3 mb-12 text-center">Fitur Unggulan Kami</h2>
+                    <motion.div
+                        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        variants={{
+                            hidden: { opacity: 0 },
+                            visible: {
+                                opacity: 1,
+                                transition: { staggerChildren: 0.2 },
+                            },
+                        }}
+                    >
+                        <motion.div
+                            className="bg-pinjol-light-2 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow relative overflow-hidden"
+                            variants={itemVariants}
+                        >
+                            <DecorativeImage
+                                src="/landing/getpinjol-education-graph.jpg"
+                                alt="Education Graph"
+                                className="absolute top-0 right-0 w-20 h-20 opacity-20 rounded-full"
+                            />
+                            <i className="fas fa-shield-alt text-4xl text-pinjol-dark-3 mb-4 relative z-10"></i>
+                            <h3 className="text-2xl font-semibold text-pinjol-dark-2 mb-3 relative z-10">Analisis Keamanan Real-Time</h3>
+                            <p className="text-pinjol-dark-1 relative z-10">
+                                Cek aplikasi pinjol dalam hitungan detik! Teknologi canggih kami memindai risiko dan memberikan laporan keamanan instan untuk melindungi Anda dari penipuan.
                             </p>
-                            <Button>
-                                <i className="fas fa-check-circle mr-2"></i> Pelajari Lebih Lanjut
-                            </Button>
-                        </div>
-                        <div className="md:w-1/2 flex justify-around">
-                            <DecorativeImage src="/getpinjol-education-graph.jpg" alt="Education Graph" className="w-32 h-32 rounded-full" />
-                            <DecorativeImage src="/getpinjol-community-report.jpg" alt="Community Report" className="w-32 h-32 rounded-full" />
-                            <DecorativeImage src="/getpinjol-trust-badge.jpg" alt="Trust Badge" className="w-32 h-32 rounded-full" />
-                        </div>
+                        </motion.div>
+                        <motion.div
+                            className="bg-pinjol-light-2 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow relative overflow-hidden"
+                            variants={itemVariants}
+                        >
+                            <DecorativeImage
+                                src="/landing/getpinjol-community-report.jpg"
+                                alt="Community Report"
+                                className="absolute top-0 right-0 w-20 h-20 opacity-20 rounded-full"
+                            />
+                            <i className="fas fa-users text-4xl text-pinjol-dark-3 mb-4 relative z-10"></i>
+                            <h3 className="text-2xl font-semibold text-pinjol-dark-2 mb-3 relative z-10">Laporan Komunitas</h3>
+                            <p className="text-pinjol-dark-1 relative z-10">
+                                Bergabunglah dengan ribuan pengguna yang berbagi pengalaman. Laporan komunitas kami membantu Anda mengenali pinjol aman dan menghindari yang berisiko.
+                            </p>
+                        </motion.div>
+                        <motion.div
+                            className="bg-pinjol-light-2 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow relative overflow-hidden"
+                            variants={itemVariants}
+                        >
+                            <DecorativeImage
+                                src="/landing/getpinjol-trust-badge.jpg"
+                                alt="Trust Badge"
+                                className="absolute top-0 right-0 w-20 h-20 opacity-20 rounded-full"
+                            />
+                            <i className="fas fa-book-open text-4xl text-pinjol-dark-3 mb-4 relative z-10"></i>
+                            <h3 className="text-2xl font-semibold text-pinjol-dark-2 mb-3 relative z-10">Edukasi Finansial</h3>
+                            <p className="text-pinjol-dark-1 relative z-10">
+                                Tingkatkan literasi keuangan Anda dengan panduan praktis dan tips cerdas dari Get Pinjol. Kelola uang Anda dengan percaya diri!
+                            </p>
+                        </motion.div>
+                    </motion.div>
+                    <div className="text-center mt-10">
+                        <Button
+                            as="a"
+                            href="#checker"
+                            className="inline-flex items-center px-6 py-3 bg-pinjol-dark-3 text-white rounded-md font-medium hover:bg-pinjol-dark-2 transition-colors"
+                        >
+                            <i className="fas fa-rocket mr-2"></i> Coba Sekarang
+                        </Button>
                     </div>
                 </div>
             </FullScreenSection>
 
             <FullScreenSection id="stats" className="bg-pinjol-light-3 text-pinjol-dark-2 py-16">
-                <div className="container mx-auto px-4 text-left">
-                    <h2 className="text-4xl font-bold mb-6">Statistik Keamanan</h2>
-                    <p className="text-lg mb-8 max-w-2xl">
-                        Data terbaru menunjukkan ribuan laporan dari komunitas kami, membantu Anda menghindari pinjaman berisiko.
-                    </p>
-                    <Card className="bg-white shadow-md p-6">
-                        <ul className="space-y-3">
-                            {topReports.map((report) => (
-                                <li key={report._id} className="flex items-center text-pinjol-dark-1">
-                                    <i className="fas fa-exclamation-circle mr-2 text-pinjol-dark-3"></i>
-                                    <span className="font-medium">{report._id}</span>: {report.count} laporan
-                                </li>
-                            ))}
-                        </ul>
-                    </Card>
+                <div className="container mx-auto px-4">
+                    <motion.h2
+                        className="text-4xl font-bold text-pinjol-dark-3 mb-12 text-center"
+                        variants={itemVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                    >
+                        Statistik Keamanan Pinjol
+                    </motion.h2>
+                    <motion.p
+                        className="text-lg mb-10 max-w-2xl mx-auto text-center"
+                        variants={itemVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                    >
+                        Ribuan pengguna telah melaporkan pinjol berisiko. Lihat data terbaru dari komunitas kami dan lindungi diri Anda dari penipuan!
+                    </motion.p>
+                    <motion.div
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        variants={{
+                            hidden: { opacity: 0 },
+                            visible: {
+                                opacity: 1,
+                                transition: { staggerChildren: 0.2 },
+                            },
+                        }}
+                    >
+                        {topReports.length > 0 ? (
+                            topReports.map((report) => (
+                                <motion.div
+                                    key={report._id}
+                                    className="bg-pinjol-light-2 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center"
+                                    variants={itemVariants}
+                                >
+                                    <i className="fas fa-exclamation-circle text-3xl text-pinjol-dark-3 mr-4"></i>
+                                    <div>
+                                        <h3 className="text-xl font-semibold text-pinjol-dark-1">{report._id}</h3>
+                                        <p className="text-pinjol-dark-2">{report.count} laporan dari komunitas</p>
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <motion.div
+                                className="bg-pinjol-light-2 p-6 rounded-lg shadow-md col-span-full text-center"
+                                variants={itemVariants}
+                            >
+                                <p className="text-pinjol-dark-1">Belum ada laporan. Jadilah yang pertama melaporkan!</p>
+                            </motion.div>
+                        )}
+                    </motion.div>
+                    <motion.div
+                        className="text-center mt-10"
+                        variants={itemVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                    >
+                        <Button
+                            as="a"
+                            href="#checker"
+                            className="inline-flex items-center px-6 py-3 bg-pinjol-dark-3 text-white rounded-md font-medium hover:bg-pinjol-dark-2 transition-colors"
+                        >
+                            <i className="fas fa-chart-bar mr-2"></i> Lihat Laporan Lengkap
+                        </Button>
+                    </motion.div>
                 </div>
             </FullScreenSection>
 
-            <FullScreenSection id="checker" className="bg-pinjol-light-1 text-pinjol-dark-1 py-16">
-                <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-4xl font-bold text-pinjol-dark-3 mb-6">Cek Keamanan Pinjaman</h2>
-                    <p className="text-lg mb-6 max-w-2xl mx-auto">
-                        Masukkan nama aplikasi atau URL untuk mendapatkan laporan keamanan instan dari komunitas kami.
-                    </p>
-                    <form onSubmit={handleCheckSubmit} className="flex flex-col items-center">
+            <FullScreenSection id="checker" className="bg-pinjol-light-1 text-pinjol-dark-1 py-16 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"></div>
+                <div className="container mx-auto px-4 text-center relative z-10">
+                    <motion.h2
+                        className="text-4xl font-bold text-pinjol-dark-3 mb-6"
+                        variants={itemVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                    >
+                        Cek Keamanan Pinjaman Sekarang!
+                    </motion.h2>
+                    <motion.p
+                        className="text-lg mb-8 max-w-2xl mx-auto"
+                        variants={itemVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                    >
+                        Ketik nama aplikasi atau URL pinjol, dan dapatkan laporan keamanan instan dari komunitas kami. Amankan keuangan Anda dalam satu klik!
+                    </motion.p>
+                    <motion.form
+                        onSubmit={handleCheckSubmit}
+                        className="flex flex-col md:flex-row items-center justify-center gap-4"
+                        variants={itemVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                    >
                         <input
                             type="text"
                             value={checkInput}
                             onChange={(e) => setCheckInput(e.target.value)}
-                            placeholder="Masukkan nama aplikasi atau URL website"
-                            className="w-full max-w-md px-4 py-2 border-2 border-pinjol-light-4 rounded-md text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 mb-4"
+                            placeholder="Masukkan nama aplikasi atau URL"
+                            className="w-full max-w-md px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
                         />
-                        <Button type="submit">
-                            <i className="fas fa-search mr-2"></i> Mulai Pengecekan
+                        <Button
+                            type="submit"
+                            className="inline-flex items-center px-6 py-3 bg-pinjol-dark-3 text-white rounded-lg font-medium hover:bg-pinjol-dark-2 transition-colors"
+                        >
+                            <i className="fas fa-search mr-2"></i> Cek Sekarang
                         </Button>
-                    </form>
-                </div>
-                <div className="absolute bottom-0 right-0 mb-8 mr-8">
-                    <img src="/getpinjol-financial-expert.jpg" alt="Financial Expert" className="w-48 h-auto rounded-lg shadow-lg" />
+                    </motion.form>
                 </div>
             </FullScreenSection>
 
