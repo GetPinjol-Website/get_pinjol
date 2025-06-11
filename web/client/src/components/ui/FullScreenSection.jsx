@@ -6,9 +6,9 @@ function FullScreenSection({ children, className, id }) {
         <motion.section
             {...pageTransition}
             id={id}
-            className={`min-h-screen flex items-center justify-center px-[5%] pt-[20%] ${className || ''} font-arial`}
+            className={`min-h-[calc(100vh-64px)] md:min-h-[calc(100vh-80px)] flex items-center justify-center px-[5%] ${className || ''} font-arial`}
         >
-            <div className="w-full max-w-4xl mx-auto">
+            <div className="w-full max-w-4xl mx-auto items-center justify-center">
                 {children}
             </div>
         </motion.section>

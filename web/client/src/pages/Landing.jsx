@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import ReportPresenter from '../presenters/ReportPresenter';
-import Card from '../components/ui/Card';
 import ErrorMessage from '../components/common/ErrorMessage.jsx';
 import Spinner from '../components/common/Spinner';
 import FullScreenSection from '../components/ui/FullScreenSection';
 import Button from '../components/common/Button';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../utils/animations';
 import DecorativeImage from '../components/common/DecorativeImage';
 
 function Landing() {
@@ -66,10 +64,10 @@ function Landing() {
 
     return (
         <div className="bg-pinjol-light-1 font-roboto">
-            <FullScreenSection id="hero" className="bg-gradient-to-b from-pinjol-dark-4 to-pinjol-dark-3 text-white flex items-center justify-center relative">
+            <FullScreenSection id="hero" className="bg-gradient-to-b from-pinjol-dark-4 to-pinjol-dark-3 text-white flex items-center justify-center relative py-[25%] sm:py-[11%]">
                 <div className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center" style={{ filter: 'blur(4px)' }}></div>
                 <div className="absolute inset-0 bg-pinjol-dark-1 bg-opacity-70"></div>
-                <div className="relative z-10 text-center max-w-4xl space-y-10">
+                <div className="relative z-10 text-center max-w-4xl space-y-10 mx-auto px-4">
                     <motion.img
                         src="/logo.png"
                         alt="Get Pinjol Logo"
