@@ -31,7 +31,7 @@ function App() {
     setRole,
     navigate,
     showError: (message) => alert(message),
-    showSuccess: (message) => console.log(message), // Optional: tambahkan showSuccess jika dibutuhkan
+    showSuccess: (message) => console.log(message),
   });
 
   useEffect(() => {
@@ -48,14 +48,15 @@ function App() {
   }
 
   return (
-    <motion.div {...pageTransition} className="flex flex-col min-h-screen">
+    <motion.div {...pageTransition} className="flex flex-col min-h-screen w-full">
       <Header
         isAuthenticated={isAuthenticated}
         role={role}
         setIsAuthenticated={setIsAuthenticated}
         setRole={setRole}
+        className="w-full"
       />
-      <main className="flex-grow container">
+      <main className="flex-grow w-full">
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} setRole={setRole} />} />
@@ -81,7 +82,7 @@ function App() {
           <Route path="*" element={<h1>404 - Halaman Tidak Ditemukan</h1>} />
         </Routes>
       </main>
-      <Footer />
+      <Footer className="w-full" />
     </motion.div>
   );
 }
