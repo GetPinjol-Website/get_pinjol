@@ -3,7 +3,7 @@ import UserModel from '../models/UserModel';
 // Presenter untuk mengelola logika autentikasi
 class AuthPresenter {
   constructor(view) {
-    this.view = view; // View adalah komponen React
+    this.view = view;
   }
 
   // Menangani proses register
@@ -25,11 +25,16 @@ class AuthPresenter {
     try {
       this.view.setLoading(true);
       const response = await UserModel.login(credentials);
+      console.log('Respons login di AuthPresenter:', response);
+      if (response.status !== 'sukses') {
+        throw new Error(response.message || 'Gagal login');
+      }
       this.view.setToken(true); // berhasil login
       this.view.setRole(response.role);
       this.view.showSuccess(response.message);
       this.view.navigate(response.role === 'admin' ? '/admin' : '/dashboard');
     } catch (error) {
+      console.error('Error login di AuthPresenter:', error.message);
       this.view.showError(error.message || 'Gagal login');
     } finally {
       this.view.setLoading(false);

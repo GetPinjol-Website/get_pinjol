@@ -4,9 +4,11 @@ class UserModel {
   static async register(userData) {
     try {
       const response = await register(userData);
+      console.log('Respons registrasi di UserModel:', response);
       if (response.status !== 'sukses') throw new Error(response.message);
       return response;
     } catch (error) {
+      console.error('Error registrasi di UserModel:', error.message);
       throw new Error(error.message || 'Gagal mendaftarkan pengguna');
     }
   }
@@ -14,11 +16,13 @@ class UserModel {
   static async login(credentials) {
     try {
       const response = await login(credentials);
+      console.log('Respons login di UserModel:', response);
       if (response.status !== 'sukses') throw new Error(response.message);
       localStorage.setItem('token', response.token);
       localStorage.setItem('role', response.role);
       return response;
     } catch (error) {
+      console.error('Error login di UserModel:', error.message);
       throw new Error(error.message || 'Gagal login');
     }
   }
@@ -29,6 +33,7 @@ class UserModel {
       if (response.status !== 'sukses') throw new Error(response.message);
       return response.data;
     } catch (error) {
+      console.error('Error getAllUsers di UserModel:', error.message);
       throw new Error(error.message || 'Gagal mengambil daftar pengguna');
     }
   }
@@ -39,6 +44,7 @@ class UserModel {
       if (response.status !== 'sukses') throw new Error(response.message);
       return response.data;
     } catch (error) {
+      console.error('Error getUserById di UserModel:', error.message);
       throw new Error(error.message || 'Gagal mengambil data pengguna');
     }
   }
@@ -47,10 +53,11 @@ class UserModel {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Token tidak ditemukan');
-      const response = await checkRole(token); // Pastikan fungsi checkRole mengirim token sebagai header
+      const response = await checkRole(token);
       if (response.status !== 'sukses') throw new Error(response.message);
       return response.role;
     } catch (error) {
+      console.error('Error checkRole di UserModel:', error.message);
       throw new Error(error.message || 'Gagal memeriksa role pengguna');
     }
   }
@@ -68,6 +75,7 @@ class UserModel {
       localStorage.removeItem('token');
       localStorage.removeItem('role');
     } catch (error) {
+      console.error('Error logout di UserModel:', error.message);
       throw new Error('Gagal logout');
     }
   }

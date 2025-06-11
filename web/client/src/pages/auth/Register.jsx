@@ -23,8 +23,8 @@ function Register() {
         showError: setError,
         showSuccess: setSuccess,
         navigate,
-        setToken: () => { }, // Placeholder for token state
-        setRole: () => { }, // Placeholder for role state
+        setToken: () => { },
+        setRole: () => { },
     });
 
     const handleChange = (e) => {
@@ -49,7 +49,7 @@ function Register() {
     };
 
     return (
-        <FullScreenSection id="register" className="bg-pinjol-light-1 relative overflow-hidden">
+        <FullScreenSection id="register" className="bg-pinjol-light-1 relative overflow-hidden pt-16">
             <div
                 className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"
             ></div>

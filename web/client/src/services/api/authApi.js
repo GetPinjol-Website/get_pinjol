@@ -5,12 +5,14 @@ import { BASE_URL } from '../../utils/constants';
 const handleApiError = (error) => {
   if (error.response) {
     const { status, data } = error.response;
+    console.error('Error dari server:', data); // Log detail error
     return {
       status: data.status || 'error',
       message: data.pesan || 'Terjadi kesalahan pada server',
       code: status,
     };
   }
+  console.error('Error jaringan:', error.message);
   return {
     status: 'error',
     message: error.message || 'Koneksi jaringan gagal',
@@ -21,7 +23,13 @@ const handleApiError = (error) => {
 // Register pengguna baru
 export const register = async (userData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/register`, userData);
+    console.log('Data registrasi yang dikirim:', userData);
+    const response = await axios.post(`${BASE_URL}/register`, userData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('Respons registrasi:', response.data);
     return {
       status: response.data.status,
       message: response.data.pesan,
@@ -35,7 +43,13 @@ export const register = async (userData) => {
 // Login pengguna
 export const login = async (credentials) => {
   try {
-    const response = await axios.post(`${BASE_URL}/login`, credentials);
+    console.log('Data login yang dikirim:', credentials);
+    const response = await axios.post(`${BASE_URL}/login`, credentials, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('Respons login:', response.data);
     return {
       status: response.data.status,
       message: response.data.pesan,

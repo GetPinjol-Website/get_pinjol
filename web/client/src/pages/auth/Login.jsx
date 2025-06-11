@@ -23,8 +23,8 @@ function Login() {
         showError: setError,
         showSuccess: setSuccess,
         navigate,
-        setToken: () => { }, // Placeholder for token state in parent component
-        setRole: () => { }, // Placeholder for role state in parent component
+        setToken: () => { },
+        setRole: () => { },
     });
 
     const handleChange = (e) => {
@@ -40,13 +40,19 @@ function Login() {
             setError('Email tidak valid');
             return;
         }
-        await presenter.handleLogin(formData);
+        console.log('Data login yang dikirim:', formData);
+        // Ubah 'email' menjadi 'username' jika server mengharapkannya
+        const credentials = {
+            username: formData.email, // Server mengharapkan 'username'
+            password: formData.password,
+        };
+        await presenter.handleLogin(credentials);
     };
 
     return (
         <motion.div
             {...pageTransition}
-            className="min-h-screen bg-pinjol-light-1 flex items-center justify-center font-roboto relative overflow-hidden"
+            className="min-h-screen bg-pinjol-light-1 flex items-center justify-center font-roboto relative overflow-hidden pt-16"
         >
             <div
                 className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"
