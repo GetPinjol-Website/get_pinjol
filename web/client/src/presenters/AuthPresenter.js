@@ -3,7 +3,7 @@ import UserModel from '../models/UserModel';
 // Presenter untuk mengelola logika autentikasi
 class AuthPresenter {
   constructor(view) {
-    this.view = view; // View adalah komponen React
+    this.view = view;
   }
 
   // Menangani proses register
@@ -24,13 +24,23 @@ class AuthPresenter {
   async handleLogin(credentials) {
     try {
       this.view.setLoading(true);
-      const response = await UserModel.login(credentials);
-      this.view.setToken(true); // berhasil login
-      this.view.setRole(response.role);
-      this.view.showSuccess(response.message);
-      this.view.navigate(response.role === 'admin' ? '/admin' : '/dashboard');
+      const response = await AuthModel.login(credentials); // Asumsikan ini mengembalikan token & role
+      const { token, role } = response;
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+
+      this.view.setToken(true);
+      this.view.setRole(role);
+      this.view.showSuccess('Login berhasil!');
+
+      if (role === 'admin') {
+        this.view.navigate('/admin');
+      } else {
+        this.view.navigate('/dashboard');
+      }
     } catch (error) {
-      this.view.showError(error.message || 'Gagal login');
+      this.view.showError(error.message || 'Login gagal');
     } finally {
       this.view.setLoading(false);
     }

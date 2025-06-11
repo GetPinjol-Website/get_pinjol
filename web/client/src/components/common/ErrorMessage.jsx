@@ -7,7 +7,7 @@ function ErrorMessage({ message, onClose }) {
     return (
         <motion.div
             {...modalAnimation}
-            className="fixed top-6 right-6 z-50 bg-pinjol-light-2/95 backdrop-blur-sm border border-pinjol-dark-3 rounded-xl p-4 shadow-xl max-w-sm"
+            className="fixed top-16 right-4 z-60 bg-pinjol-light-2/95 backdrop-blur-sm border border-pinjol-dark-3 rounded-xl p-4 shadow-xl max-w-sm mt-4"
         >
             <div className="flex items-center">
                 <i className="fas fa-exclamation-triangle text-pinjol-dark-4 mr-3 text-xl"></i>

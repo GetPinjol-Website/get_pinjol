@@ -7,12 +7,12 @@ import Button from '../../components/common/Button';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
-import { isValidEmail } from '../../utils/helpers';
+import { isValidEmail, isValidUsername } from '../../utils/helpers';
 import { motion } from 'framer-motion';
 import { pageTransition } from '../../utils/animations';
 
 function Login() {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -23,8 +23,10 @@ function Login() {
         showError: setError,
         showSuccess: setSuccess,
         navigate,
-        setToken: () => { }, // Placeholder for token state in parent component
-        setRole: () => { }, // Placeholder for role state in parent component
+        // setToken: () => { },
+        // setRole: () => { },
+        setToken: setIsAuthenticated,
+        setRole: setRole,
     });
 
     const handleChange = (e) => {
@@ -32,21 +34,26 @@ function Login() {
     };
 
     const handleSubmit = async () => {
-        if (!formData.email || !formData.password) {
-            setError('Email dan password wajib diisi');
+        if (!formData.username || !formData.password) {
+            setError('username dan password wajib diisi');
             return;
         }
-        if (!isValidEmail(formData.email)) {
-            setError('Email tidak valid');
+        if (!isValidUsername(formData.username)) {
+            setError('Username tidak valid');
             return;
         }
-        await presenter.handleLogin(formData);
+        console.log('Data login yang dikirim:', formData);
+        const credentials = {
+            username: formData.username,
+            password: formData.password,
+        };
+        await presenter.handleLogin(credentials);
     };
 
     return (
         <motion.div
             {...pageTransition}
-            className="min-h-screen bg-pinjol-light-1 flex items-center justify-center font-roboto relative overflow-hidden"
+            className="min-h-screen bg-pinjol-light-1 flex items-center justify-center font-roboto relative overflow-hidden pt-16"
         >
             <div
                 className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"
@@ -70,14 +77,14 @@ function Login() {
                     <Form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label className="block text-pinjol-dark-2 font-medium mb-2">
-                                <i className="fas fa-envelope mr-2"></i>Email
+                                <i className="fas fa-envelope mr-2"></i>Username
                             </label>
                             <Input
-                                type="email"
-                                name="email"
-                                value={formData.email}
+                                type="username"
+                                name="username"
+                                value={formData.username}
                                 onChange={handleChange}
-                                placeholder="Masukkan email Anda"
+                                placeholder="Masukkan username Anda"
                                 className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
                                 required
                             />

@@ -4,6 +4,12 @@ export const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
+// Helper untuk memvalidasi format username
+export const isValidUsername = (username) => {
+  const usernameRegex = /^[a-zA-Z0-9_]{3,}$/;
+  return usernameRegex.test(username);
+};
+
 // Helper untuk memvalidasi format tanggal (YYYY-MM-DD atau ISO 8601)
 export const isValidDate = (dateString) => {
   const date = new Date(dateString);

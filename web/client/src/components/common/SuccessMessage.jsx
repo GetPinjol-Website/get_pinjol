@@ -7,7 +7,7 @@ function SuccessMessage({ message, onClose }) {
     return (
         <motion.div
             {...modalAnimation}
-            className="fixed position-top-4 right-4 z-50 bg-pgray-light-4 text-pgray-dark-2 rounded-lg p-4 shadow-lg max-w-sm"
+            className="fixed top-16 right-4 z-60 bg-pgray-light-4 text-pgray-dark-2 rounded-lg p-4 shadow-lg max-w-sm mt-4"
         >
             <div className="flex items-center">
                 <i className="fas fa-check-circle text-pgray-dark-3 mr-2"></i>
