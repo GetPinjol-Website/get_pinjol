@@ -38,11 +38,18 @@ function Dashboard({ isOfflineMode }) {
       }),
     setReports,
     navigate,
-    refreshReports: () => presenter.getUserReports({ type: filterType }),
+    refreshReports: () => {
+      if (filterType === '') {
+        // Mengambil semua laporan jika filter "Semua"
+        presenter.getUserReports();
+      } else {
+        presenter.getUserReports({ type: filterType });
+      }
+    },
   });
 
   useEffect(() => {
-    presenter.getUserReports({ type: filterType });
+    presenter.getUserReports({ type: filterType === '' ? undefined : filterType });
   }, [filterType]);
 
   const handleDelete = (id, type) => {

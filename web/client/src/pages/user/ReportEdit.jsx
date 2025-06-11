@@ -8,6 +8,7 @@ import Button from '../../components/common/Button';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
+import DropdownChecklist from '../../components/common/DropdownChecklist';
 import { REPORT_CATEGORIES, REPORT_TYPES, EVIDENCE_PLACEHOLDER } from '../../utils/constants';
 import { isValidDate, isValidUrl } from '../../utils/helpers';
 import { motion } from 'framer-motion';
@@ -67,30 +68,42 @@ function ReportEdit({ isOfflineMode }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'category') {
-      const options = e.target.options;
-      const selected = [];
-      for (let i = 0; i < options.length; i++) {
-        if (options[i].selected) selected.push(options[i].value);
-      }
-      setFormData({ ...formData, [name]: selected });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.appName || !formData.description || !formData.category.length || !formData.incidentDate) {
       setError('Semua field kecuali bukti wajib diisi');
+      window.Swal.fire({
+        icon: 'error',
+        title: 'Peringatan',
+        text: 'Semua field kecuali bukti wajib diisi',
+        confirmButtonColor: '#658147',
+        background: '#E7F0DC',
+      });
       return;
     }
     if (!isValidDate(formData.incidentDate)) {
       setError('Tanggal kejadian tidak valid');
+      window.Swal.fire({
+        icon: 'error',
+        title: 'Peringatan',
+        text: 'Tanggal kejadian tidak valid',
+        confirmButtonColor: '#658147',
+        background: '#E7F0DC',
+      });
       return;
     }
     if (formData.evidence && !isValidUrl(formData.evidence)) {
       setError('Link bukti tidak valid');
+      window.Swal.fire({
+        icon: 'error',
+        title: 'Peringatan',
+        text: 'Link bukti tidak valid',
+        confirmButtonColor: '#658147',
+        background: '#E7F0DC',
+      });
       return;
     }
     window.Swal.fire({
@@ -112,6 +125,13 @@ function ReportEdit({ isOfflineMode }) {
           }
         } catch (error) {
           setError(error.message);
+          window.Swal.fire({
+            icon: 'error',
+            title: 'Peringatan',
+            text: error.message,
+            confirmButtonColor: '#658147',
+            background: '#E7F0DC',
+          });
         }
       }
     });
@@ -137,6 +157,11 @@ function ReportEdit({ isOfflineMode }) {
       }
     });
   };
+
+  const categoryOptions = REPORT_CATEGORIES.map((cat) => {
+    const [value, label] = cat.split(': ');
+    return { value, label };
+  });
 
   return (
     <FullScreenSection>
@@ -178,28 +203,13 @@ function ReportEdit({ isOfflineMode }) {
             onChange={handleChange}
             required
           />
-          <div className="input-group mb-4">
-            <label className="block text-pgray-700 font-medium mb-1">
-              Kategori<span className="text-red-500">*</span>
-            </label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              multiple
-              required
-              className="w-full px-3 py-2 border border-pinjol-light-4 rounded-lg"
-            >
-              {REPORT_CATEGORIES.map((cat) => {
-                const [value, label] = cat.split(': ');
-                return (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+          <DropdownChecklist
+            label="Kategori"
+            name="category"
+            options={categoryOptions}
+            selected={formData.category}
+            onChange={handleChange}
+          />
           <Input
             label="Tanggal Kejadian"
             type="date"
