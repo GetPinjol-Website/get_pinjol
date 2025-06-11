@@ -10,6 +10,7 @@ import ReportForm from './pages/user/ReportForm';
 import ReportEdit from './pages/user/ReportEdit';
 import PinjolList from './pages/user/PinjolList';
 import Education from './pages/user/Education';
+import EducationDetail from './pages/user/EducationDetail';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import PinjolManagement from './pages/admin/PinjolManagement';
 import UserManagement from './pages/admin/UserManagement';
@@ -63,6 +64,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/pinjol" element={<PinjolList />} />
           <Route path="/education" element={<Education />} />
+          <Route path="/education/:id" element={<EducationDetail />} />
           {isAuthenticated && role === 'user' && (
             <>
               <Route path="/dashboard" element={<Dashboard />} />
