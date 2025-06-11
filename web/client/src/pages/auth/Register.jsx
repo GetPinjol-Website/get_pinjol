@@ -23,8 +23,8 @@ function Register() {
         showError: setError,
         showSuccess: setSuccess,
         navigate,
-        setToken: () => { }, // Placeholder untuk state token
-        setRole: () => { }, // Placeholder untuk state role
+        setToken: () => { }, // Placeholder for token state
+        setRole: () => { }, // Placeholder for role state
     });
 
     const handleChange = (e) => {
@@ -54,7 +54,7 @@ function Register() {
                 className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"
             ></div>
             <motion.div
-                className="relative z-10 bg-pinjol-light-2 p-8 rounded-lg shadow-lg max-w-md w-full mx-auto font-roboto"
+                className="relative z-10 bg-pinjol-light-2 p-8 rounded-lg shadow-lg max-w-3xl w-full mx-auto font-roboto"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -75,61 +75,67 @@ function Register() {
                 <SuccessMessage message={success} onClose={() => setSuccess('')} />
                 {isLoading && <Spinner />}
                 <Form onSubmit={handleSubmit}>
-                    <motion.div className="mb-4" variants={itemVariants}>
-                        <label className="block text-pinjol-dark-2 font-medium mb-2">
-                            <i className="fas fa-user mr-2"></i>Username
-                        </label>
-                        <Input
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            placeholder="Masukkan username Anda"
-                            className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
-                            required
-                        />
-                    </motion.div>
-                    <motion.div className="mb-4" variants={itemVariants}>
-                        <label className="block text-pinjol-dark-2 font-medium mb-2">
-                            <i className="fas fa-envelope mr-2"></i>Email
-                        </label>
-                        <Input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Masukkan email Anda"
-                            className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
-                            required
-                        />
-                    </motion.div>
-                    <motion.div className="mb-6" variants={itemVariants}>
-                        <label className="block text-pinjol-dark-2 font-medium mb-2">
-                            <i className="fas fa-lock mr-2"></i>Password
-                        </label>
-                        <Input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="Masukkan password Anda"
-                            className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
-                            required
-                        />
-                    </motion.div>
-                    <motion.div className="mb-6" variants={itemVariants}>
-                        <label className="block text-pinjol-dark-2 font-medium mb-2">
-                            <i className="fas fa-user-tag mr-2"></i>Role
-                        </label>
-                        <select
-                            name="role"
-                            value={formData.role}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
-                        >
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </motion.div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <motion.div className="mb-4" variants={itemVariants}>
+                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
+                                <i className="fas fa-user mr-2"></i>
+                                Username
+                            </label>
+                            <Input
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                placeholder="Masukkan username Anda"
+                                className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                                required
+                            />
+                        </motion.div>
+                        <motion.div className="mb-4" variants={itemVariants}>
+                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
+                                <i className="fas fa-envelope mr-2"></i>
+                                Email
+                            </label>
+                            <Input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="Masukkan email Anda"
+                                className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                                required
+                            />
+                        </motion.div>
+                        <motion.div className="mb-6" variants={itemVariants}>
+                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
+                                <i className="fas fa-lock mr-2"></i>
+                                Password
+                            </label>
+                            <Input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Masukkan password Anda"
+                                className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                                required
+                            />
+                        </motion.div>
+                        <motion.div className="mb-6" variants={itemVariants}>
+                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 relative [select_~_&]:after:content-['']">
+                                <i className="fas fa-user-tag mr-2"></i>
+                                Role
+                            </label>
+                            <select
+                                name="role"
+                                value={formData.role}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                            >
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </motion.div>
+                    </div>
                     <motion.div variants={itemVariants}>
                         <Button
                             type="submit"
