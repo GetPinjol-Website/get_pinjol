@@ -1,5 +1,5 @@
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { NetworkFirst, StaleWhileRevalidate, NetworkOnly } from 'workbox-strategies';
 import { precacheAndRoute } from 'workbox-precaching';
 import { Queue } from 'workbox-background-sync';
 
@@ -76,16 +76,23 @@ registerRoute(
   })
 );
 
-// Hindari caching untuk login dan registrasi
+// Tidak cache untuk login, register, dan check-role
 registerRoute(
-  ({ url }) => url.pathname.match(/^\/(login|register)/),
-  new NetworkFirst({
-    cacheName: 'api-auth-cache',
+  ({ url }) => url.pathname.match(/^\/(login|register|check-role)/),
+  new NetworkOnly({
     plugins: [
       {
-        cacheableResponse: { statuses: [0, 200] },
-        cacheWillUpdate: async ({ response }) => {
-          return null; // Jangan cache respons login/register
+        fetchDidFail: () => {
+          return new Response(
+            JSON.stringify({
+              status: 'error',
+              message: 'Anda sedang offline. Silakan sambungkan ke internet.',
+            }),
+            {
+              status: 503,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
         },
       },
     ],

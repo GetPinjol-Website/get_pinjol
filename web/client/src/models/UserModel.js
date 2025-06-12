@@ -52,9 +52,14 @@ class UserModel {
   static async checkRole() {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('Token tidak ditemukan');
+      if (!token) {
+        console.error('Token tidak ditemukan di localStorage');
+        throw new Error('Token tidak ditemukan');
+      }
       const response = await checkRole(token);
+      console.log('Respons checkRole:', response);
       if (response.status !== 'sukses') throw new Error(response.message);
+      if (!response.role) throw new Error('Role tidak ditemukan dalam respons');
       return response.role;
     } catch (error) {
       console.error('Error checkRole di UserModel:', error.message);

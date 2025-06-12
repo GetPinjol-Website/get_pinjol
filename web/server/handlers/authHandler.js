@@ -10,6 +10,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const registerHandler = async (request, h) => {
   try {
     const { username, password, email, role = 'user' } = request.payload;
+    console.log('Register payload:', { username, email, role }); // Logging
     if (!username || !password || !email) {
       return h.response({ status: 'gagal', pesan: 'Semua field wajib diisi' }).code(400).header('Cache-Control', 'no-store');
     }
@@ -33,6 +34,7 @@ const registerHandler = async (request, h) => {
 
     return h.response({ status: 'sukses', pesan: 'Pengguna berhasil didaftarkan' }).code(201).header('Cache-Control', 'no-store');
   } catch (error) {
+    console.error('Register error:', error);
     return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
   }
 };
@@ -40,6 +42,7 @@ const registerHandler = async (request, h) => {
 const loginHandler = async (request, h) => {
   try {
     const { username, password } = request.payload;
+    console.log('Login attempt:', { username }); // Logging
     if (!username || !password) {
       return h.response({ status: 'gagal', pesan: 'Username dan password wajib diisi' }).code(400).header('Cache-Control', 'no-store');
     }
@@ -50,8 +53,10 @@ const loginHandler = async (request, h) => {
     }
 
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, 'secret_key', { expiresIn: '1h' });
+    console.log('Login success:', { username, role: user.role, token }); // Logging
     return h.response({ status: 'sukses', pesan: 'Login berhasil', token, role: user.role }).code(200).header('Cache-Control', 'no-store');
   } catch (error) {
+    console.error('Login error:', error);
     return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
   }
 };
@@ -79,6 +84,7 @@ const getAllUsers = async (request, h) => {
       .header('ETag', `users-${Date.now()}`)
       .header('Last-Modified', lastModified.toUTCString());
   } catch (error) {
+    console.error('Get all users error:', error);
     return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
   }
 };
@@ -86,12 +92,14 @@ const getAllUsers = async (request, h) => {
 const checkRoleHandler = async (request, h) => {
   try {
     const authHeader = request.headers.authorization;
+    console.log('checkRole authHeader:', authHeader); // Logging
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return h.response({ status: 'gagal', pesan: 'Autentikasi diperlukan' }).code(401).header('Cache-Control', 'no-store');
     }
 
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, 'secret_key');
+    console.log('checkRole decoded:', decoded); // Logging
     if (!decoded) {
       return h.response({ status: 'gagal', pesan: 'Token tidak valid' }).code(401).header('Cache-Control', 'no-store');
     }
@@ -108,6 +116,7 @@ const checkRoleHandler = async (request, h) => {
     }
     return h.response({ status: 'gagal', pesan: 'Role tidak dikenali' }).code(400).header('Cache-Control', 'no-store');
   } catch (error) {
+    console.error('checkRole error:', error);
     if (error.name === 'JsonWebTokenError') {
       return h.response({ status: 'gagal', pesan: 'Token tidak valid' }).code(401).header('Cache-Control', 'no-store');
     }

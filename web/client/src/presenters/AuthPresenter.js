@@ -26,10 +26,11 @@ class AuthPresenter {
 
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
+      console.log('Login saved:', { token, role }); // Debugging
 
       this.view.setToken(true);
       this.view.setRole(role);
-      this.view.showSuccess('Login berhasil!');
+      this.view.showSuccess('Login berhasil');
 
       if (role === 'admin') {
         this.view.navigate('/admin', { replace: true });
@@ -43,56 +44,39 @@ class AuthPresenter {
     }
   }
 
-  async checkRole() {
-    try {
-      const role = await UserModel.checkRole();
-      this.view.setRole(role);
-      return role;
-    } catch (error) {
-      this.view.showError(error.message || 'Gagal memeriksa role');
-      return null;
-    }
-  }
-
   handleLogout() {
     try {
       UserModel.logout();
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
       this.view.setToken(false);
       this.view.setRole(null);
       this.view.navigate('/login', { replace: true });
     } catch (error) {
-      this.view.showError(error.message || 'Gagal logout');
+      this.view.showError(error || 'Gagal logout');
     }
   }
 
   async checkAuthStatus(signal) {
     try {
       this.view.setLoading(true);
-      const token = await UserModel.getToken();
-      if (token) {
-        const role = await this.checkRole();
-        this.view.setToken(true);
-        this.view.setRole(role);
-        if (role === 'admin' && this.view.navigate && window.location.pathname !== '/admin') {
-          this.view.navigate('/admin', { replace: true });
-        } else if (role === 'user' && this.view.navigate && window.location.pathname !== '/dashboard') {
-          this.view.navigate('/dashboard', { replace: true });
-        }
-      } else {
-        this.view.setToken(false);
-        this.view.setRole(null);
-        if (this.view.navigate && (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard'))) {
-          this.view.navigate('/', { replace: true });
-        }
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+
+      if (!token || !role) {
+        throw new Error('Tidak ada token atau role di localStorage');
       }
+
+      // Tidak memanggil checkRole, gunakan role dari localStorage
+      this.view.setToken(true);
+      this.view.setRole(role);
     } catch (error) {
       if (error.name !== 'AbortError') {
-        this.view.showError(error.message || 'Gagal memeriksa status autentikasi');
+        console.error('Auth status error:', error.message);
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
         this.view.setToken(false);
         this.view.setRole(null);
-        if (this.view.navigate && (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard'))) {
-          this.view.navigate('/', { replace: true });
-        }
       }
     } finally {
       this.view.setLoading(false);
