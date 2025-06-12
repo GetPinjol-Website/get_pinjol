@@ -81,7 +81,12 @@ function Navbar({ isAuthenticated, role, setIsAuthenticated, setRole }) {
     { path: '/education', label: 'Edukasi', icon: 'fa-book' },
   ];
 
-  const links = role === 'admin' ? adminLinks : userLinks;
+  const publicLinks = [
+    { path: '/pinjol', label: 'Daftar Pinjol', icon: 'fa-list' },
+    { path: '/education', label: 'Edukasi', icon: 'fa-book' },
+  ];
+
+  const links = isAuthenticated ? (role === 'admin' ? adminLinks : userLinks) : publicLinks;
 
   return (
     <motion.nav
@@ -101,6 +106,15 @@ function Navbar({ isAuthenticated, role, setIsAuthenticated, setRole }) {
           </div>
         ) : (
           <div className="flex items-center space-x-4">
+            {role !== 'admin' && links.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="flex items-center text-sm hover:text-pinjol-dark-3 transition-all duration-300"
+              >
+                <i className={`fas ${link.icon} mr-2`}></i> {link.label}
+              </Link>
+            ))}
             {!isAuthenticated && (
               <>
                 <Button
@@ -117,7 +131,7 @@ function Navbar({ isAuthenticated, role, setIsAuthenticated, setRole }) {
                 </Button>
               </>
             )}
-            {isAuthenticated && role !== 'admin' && (
+            {isAuthenticated && role === 'user' && (
               <Button
                 onClick={handleLogout}
                 className="bg-pinjol-dark-1 text-pinjol-light-1 hover:bg-pinjol-dark-2 transition duration-300 transform hover:scale-105"
@@ -137,7 +151,7 @@ function Navbar({ isAuthenticated, role, setIsAuthenticated, setRole }) {
           className="fixed top-0 left-0 h-full w-64 bg-white text-pinjol-dark-1 z-50 shadow-md font-roboto"
         >
           <div className="flex justify-between items-center p-4 border-b border-pinjol-dark-4">
-            <span className="text-lg font-semibold">Menu</span>
+            <span className="text-lg font-semibold">{role === 'admin' ? 'Menu' : 'User Panel'}</span>
             <button onClick={toggleDrawer} className="text-pinjol-dark-1">
               <i className="fas fa-times"></i>
             </button>
