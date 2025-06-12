@@ -7,9 +7,9 @@ import Button from '../../components/common/Button';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
-import FullScreenSection from '../../components/ui/FullScreenSection';
 import { isValidEmail } from '../../utils/helpers';
 import { motion } from 'framer-motion';
+import { pageTransition } from '../../utils/animations';
 
 function Register() {
     const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'user' });
@@ -49,24 +49,32 @@ function Register() {
     };
 
     return (
-        <FullScreenSection id="register" className="bg-pinjol-light-1 relative overflow-hidden py-8">
+        <motion.div
+            {...pageTransition}
+            className="min-h-screen bg-pinjol-light-1 flex flex-col items-center justify-start sm:justify-center font-roboto relative overflow-hidden py-4 sm:py-8"
+        >
             <div
                 className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"
             ></div>
-            <motion.div
-                className="relative z-10 bg-pinjol-light-2 p-8 rounded-lg shadow-lg max-w-3xl w-full mx-auto font-roboto"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-            >
+            <div className="relative z-20 w-full px-4 sm:px-0">
+                <div className="flex justify-start max-w-md sm:max-w-lg md:max-w-xl mx-auto pt-4">
+                    <Button
+                        onClick={() => navigate('/')}
+                        className="px-3 py-1 sm:px-4 sm:py-2 bg-pinjol-dark-3 text-white rounded-lg font-medium hover:bg-pinjol-dark-2 transition-colors flex items-center text-sm sm:text-base"
+                    >
+                        <i className="fas fa-home mr-2"></i>Kembali
+                    </Button>
+                </div>
+            </div>
+            <div className="relative z-10 bg-pinjol-light-2 p-4 sm:p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md sm:max-w-lg md:max-w-xl mx-4 sm:mx-auto font-roboto mt-4 sm:mt-6">
                 <motion.h1
-                    className="text-3xl font-bold text-pinjol-dark-3 mb-6 text-center"
+                    className="text-2xl sm:text-3xl font-bold text-pinjol-dark-3 mb-4 sm:mb-6 text-center"
                     variants={itemVariants}
                 >
                     Daftar ke Get Pinjol
                 </motion.h1>
                 <motion.p
-                    className="text-pinjol-dark-1 mb-8 text-center"
+                    className="text-pinjol-dark-1 mb-4 sm:mb-8 text-center text-sm sm:text-base"
                     variants={itemVariants}
                 >
                     Bergabunglah sekarang dan mulai lindungi keuangan Anda dari pinjol berisiko!
@@ -75,9 +83,9 @@ function Register() {
                 <SuccessMessage message={success} onClose={() => setSuccess('')} />
                 {isLoading && <Spinner />}
                 <Form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <motion.div className="mb-4" variants={itemVariants}>
-                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
+                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 text-sm sm:text-base relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
                                 <i className="fas fa-user mr-2"></i>
                                 Username
                             </label>
@@ -86,12 +94,12 @@ function Register() {
                                 value={formData.username}
                                 onChange={handleChange}
                                 placeholder="Masukkan username Anda"
-                                className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all text-sm sm:text-base"
                                 required
                             />
                         </motion.div>
                         <motion.div className="mb-4" variants={itemVariants}>
-                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
+                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 text-sm sm:text-base relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
                                 <i className="fas fa-envelope mr-2"></i>
                                 Email
                             </label>
@@ -101,12 +109,12 @@ function Register() {
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="Masukkan email Anda"
-                                className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all text-sm sm:text-base"
                                 required
                             />
                         </motion.div>
-                        <motion.div className="mb-6" variants={itemVariants}>
-                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
+                        <motion.div className="mb-4 sm:mb-6" variants={itemVariants}>
+                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 text-sm sm:text-base relative [input:required_~_&]:after:content-['*'] [input:required_~_&]:after:text-red-500 [input:required_~_&]:after:ml-1">
                                 <i className="fas fa-lock mr-2"></i>
                                 Password
                             </label>
@@ -116,12 +124,12 @@ function Register() {
                                 value={formData.password}
                                 onChange={handleChange}
                                 placeholder="Masukkan password Anda"
-                                className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all text-sm sm:text-base"
                                 required
                             />
                         </motion.div>
-                        <motion.div className="mb-6" variants={itemVariants}>
-                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 relative [select_~_&]:after:content-['']">
+                        <motion.div className="mb-4 sm:mb-6" variants={itemVariants}>
+                            <label className="flex items-center text-pinjol-dark-2 font-medium mb-2 text-sm sm:text-base relative [select_~_&]:after:content-['']">
                                 <i className="fas fa-user-tag mr-2"></i>
                                 Role
                             </label>
@@ -129,7 +137,7 @@ function Register() {
                                 name="role"
                                 value={formData.role}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all text-sm sm:text-base"
                             >
                                 <option value="user">User</option>
                                 <option value="admin">Admin</option>
@@ -140,23 +148,23 @@ function Register() {
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full px-6 py-3 bg-pinjol-dark-3 text-white rounded-lg font-medium hover:bg-pinjol-dark-2 transition-colors flex items-center justify-center"
+                            className="w-full px-4 py-2 sm:px-6 sm:py-3 bg-pinjol-dark-3 text-white rounded-lg font-medium hover:bg-pinjol-dark-2 transition-all text-sm sm:text-base"
                         >
                             <i className="fas fa-user-plus mr-2"></i>Daftar
                         </Button>
                     </motion.div>
                 </Form>
                 <motion.p
-                    className="mt-4 text-center text-pinjol-dark-1"
+                    className="mt-4 text-center text-pinjol-dark-1 text-sm sm:text-base"
                     variants={itemVariants}
                 >
                     Sudah punya akun?{' '}
                     <a href="/login" className="text-pinjol-dark-3 hover:underline">
-                        Masuk sekarang
+                        Masuk
                     </a>
                 </motion.p>
-            </motion.div>
-        </FullScreenSection>
+            </div>
+        </motion.div>
     );
 }
 
