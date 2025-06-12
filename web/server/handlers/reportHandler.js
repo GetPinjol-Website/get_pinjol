@@ -5,7 +5,7 @@ const ReportApp = require('../models/reportApp');
 const { nanoid } = require('nanoid');
 const jwt = require('jsonwebtoken');
 
-// Helper function untuk verifikasi token
+// Helper function untuk verifikasi token dan peran
 const verifyToken = (authHeader) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new Error('Autentikasi diperlukan', { cause: { statusCode: 401 } });
@@ -14,9 +14,9 @@ const verifyToken = (authHeader) => {
   let decoded;
   try {
     decoded = jwt.verify(token, 'secret_key');
-    if (!decoded.id) {
-      console.error('Token tidak memiliki id:', decoded);
-      throw new Error('Token tidak valid: ID pengguna tidak ditemukan');
+    if (!decoded.id || !decoded.role) {
+      console.error('Token tidak memiliki id atau role:', decoded);
+      throw new Error('Token tidak valid: ID atau role pengguna tidak ditemukan');
     }
   } catch (error) {
     console.error('Error verifikasi token:', error.message);
@@ -29,14 +29,22 @@ const verifyToken = (authHeader) => {
 const createReportWeb = async (request, h) => {
   try {
     const decoded = verifyToken(request.headers.authorization);
-    const { appName, description, category, incidentDate, evidence } = request.payload;
+    const { appName, description, category, incidentDate, evidence, level, reportType } = request.payload;
 
-    if (!appName || !description || !category || !incidentDate) {
+    if (!appName || !description || !category || !incidentDate || !level || !reportType) {
       return h.response({ status: 'gagal', pesan: 'Semua field kecuali evidence wajib diisi' }).code(400).header('Cache-Control', 'no-store');
     }
 
     if (isNaN(Date.parse(incidentDate))) {
       return h.response({ status: 'gagal', pesan: 'Tanggal insiden tidak valid' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    if (!['low', 'medium', 'high'].includes(level)) {
+      return h.response({ status: 'gagal', pesan: 'Tingkat harus low, medium, atau high' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    if (!['positive', 'negative'].includes(reportType)) {
+      return h.response({ status: 'gagal', pesan: 'Tipe laporan harus positive atau negative' }).code(400).header('Cache-Control', 'no-store');
     }
 
     const newReport = new ReportWeb({
@@ -46,7 +54,10 @@ const createReportWeb = async (request, h) => {
       category,
       incidentDate: new Date(incidentDate),
       evidence,
-      userId: decoded.id, // Menggunakan userId dari token
+      level,
+      reportType,
+      userId: decoded.id,
+      status: 'pending',
       updatedAt: new Date(),
     });
 
@@ -71,14 +82,22 @@ const createReportWeb = async (request, h) => {
 const createReportApp = async (request, h) => {
   try {
     const decoded = verifyToken(request.headers.authorization);
-    const { appName, description, category, incidentDate, evidence } = request.payload;
+    const { appName, description, category, incidentDate, evidence, level, reportType } = request.payload;
 
-    if (!appName || !description || !category || !incidentDate) {
+    if (!appName || !description || !category || !incidentDate || !level || !reportType) {
       return h.response({ status: 'gagal', pesan: 'Semua field kecuali evidence wajib diisi' }).code(400).header('Cache-Control', 'no-store');
     }
 
     if (isNaN(Date.parse(incidentDate))) {
       return h.response({ status: 'gagal', pesan: 'Tanggal insiden tidak valid' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    if (!['low', 'medium', 'high'].includes(level)) {
+      return h.response({ status: 'gagal', pesan: 'Tingkat harus low, medium, atau high' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    if (!['positive', 'negative'].includes(reportType)) {
+      return h.response({ status: 'gagal', pesan: 'Tipe laporan harus positive atau negative' }).code(400).header('Cache-Control', 'no-store');
     }
 
     const newReport = new ReportApp({
@@ -88,7 +107,10 @@ const createReportApp = async (request, h) => {
       category,
       incidentDate: new Date(incidentDate),
       evidence,
-      userId: decoded.id, // Menggunakan userId dari token
+      level,
+      reportType,
+      userId: decoded.id,
+      status: 'pending',
       updatedAt: new Date(),
     });
 
@@ -112,32 +134,68 @@ const createReportApp = async (request, h) => {
 // Get All Reports (Web and App)
 const getAllReports = async (request, h) => {
   try {
+    const decoded = verifyToken(request.headers.authorization);
     const { appName, category, type } = request.query;
     let query = {};
     if (appName) query.appName = new RegExp(appName, 'i');
     if (category) query.category = category;
 
     let reports = [];
+    let recommendation = 'Belum Diketahui';
+
     if (!type || type === 'web') {
-      const webReports = await ReportWeb.find(query).sort({ reportedAt: -1 });
+      let webQuery = { ...query };
+      if (decoded.role !== 'admin') {
+        webQuery.status = 'accepted';
+      }
+      const webReports = await ReportWeb.find(webQuery).sort({ reportedAt: -1 });
       reports = reports.concat(webReports);
     }
     if (!type || type === 'app') {
-      const appReports = await ReportApp.find(query).sort({ reportedAt: -1 });
+      let appQuery = { ...query };
+      if (decoded.role !== 'admin') {
+        appQuery.status = 'accepted';
+      }
+      const appReports = await ReportApp.find(appQuery).sort({ reportedAt: -1 });
       reports = reports.concat(appReports);
     }
 
     if (reports.length === 0) {
-      return h.response({ status: 'sukses', data: [] }).code(200)
+      return h.response({ 
+        status: 'sukses', 
+        data: [], 
+        recommendation,
+        recommendationStatus: 'grey'
+      }).code(200)
         .header('Cache-Control', 'public, max-age=1209600')
         .header('ETag', `reports-${Date.now()}`);
+    }
+
+    // Hitung rekomendasi berdasarkan laporan positif dan negatif
+    const positiveReports = reports.filter(r => r.reportType === 'positive').length;
+    const negativeReports = reports.filter(r => r.reportType === 'negative').length;
+
+    if (positiveReports > negativeReports) {
+      recommendation = 'Cukup Direkomendasikan';
+      recommendationStatus = 'green';
+    } else if (negativeReports > positiveReports) {
+      recommendation = 'Tidak Direkomendasikan';
+      recommendationStatus = 'red';
+    } else {
+      recommendation = 'Netral';
+      recommendationStatus = 'yellow';
     }
 
     const lastModified = reports.reduce((latest, report) => {
       return report.updatedAt > latest ? report.updatedAt : latest;
     }, new Date(0));
 
-    return h.response({ status: 'sukses', data: reports }).code(200)
+    return h.response({ 
+      status: 'sukses', 
+      data: reports, 
+      recommendation, 
+      recommendationStatus 
+    }).code(200)
       .header('Cache-Control', 'public, max-age=1209600')
       .header('ETag', `reports-${Date.now()}`)
       .header('Last-Modified', lastModified.toUTCString());
@@ -164,7 +222,12 @@ const getAllReportsByUser = async (request, h) => {
     }
 
     if (reports.length === 0) {
-      return h.response({ status: 'sukses', data: [] }).code(200)
+      return h.response({ 
+        status: 'sukses', 
+        data: [], 
+        recommendation: 'Belum Diketahui',
+        recommendationStatus: 'grey'
+      }).code(200)
         .header('Cache-Control', 'public, max-age=1209600')
         .header('ETag', `user-reports-${decoded.id}-${Date.now()}`);
     }
@@ -201,12 +264,17 @@ const getReportById = async (request, h) => {
     }
 
     if (!report) {
-      return h.response({ status: 'gagal', pesan: 'Laporan tidak ditemukan' }).code(404)
+      return h.response({ 
+        status: 'gagal', 
+        pesan: 'Laporan tidak ditemukan',
+        recommendation: 'Belum Diketahui',
+        recommendationStatus: 'grey'
+      }).code(404)
         .header('Cache-Control', 'public, max-age=1209600')
         .header('ETag', `report-${id}`);
     }
 
-    if (report.userId !== decoded.id) {
+    if (report.userId !== decoded.id && decoded.role !== 'admin') {
       return h.response({ status: 'gagal', pesan: 'Anda tidak memiliki akses ke laporan ini' }).code(403).header('Cache-Control', 'no-store');
     }
 
@@ -231,14 +299,14 @@ const updateReportWeb = async (request, h) => {
   try {
     const { id } = request.params;
     const decoded = verifyToken(request.headers.authorization);
-    const { appName, description, category, incidentDate, evidence, status } = request.payload;
+    const { appName, description, category, incidentDate, evidence, status, level, reportType } = request.payload;
 
     const report = await ReportWeb.findOne({ id });
     if (!report) {
       return h.response({ status: 'gagal', pesan: 'Laporan web tidak ditemukan' }).code(404).header('Cache-Control', 'no-store');
     }
 
-    if (report.userId !== decoded.id) {
+    if (report.userId !== decoded.id && decoded.role !== 'admin') {
       return h.response({ status: 'gagal', pesan: 'Anda tidak memiliki akses untuk mengedit laporan ini' }).code(403).header('Cache-Control', 'no-store');
     }
 
@@ -249,11 +317,21 @@ const updateReportWeb = async (request, h) => {
       incidentDate: incidentDate ? new Date(incidentDate) : report.incidentDate,
       evidence: evidence || report.evidence,
       status: status || report.status,
+      level: level || report.level,
+      reportType: reportType || report.reportType,
       updatedAt: new Date(),
     };
 
     if (incidentDate && isNaN(Date.parse(incidentDate))) {
       return h.response({ status: 'gagal', pesan: 'Tanggal insiden tidak valid' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    if (level && !['low', 'medium', 'high'].includes(level)) {
+      return h.response({ status: 'gagal', pesan: 'Tingkat harus low, medium, atau high' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    if (reportType && !['positive', 'negative'].includes(reportType)) {
+      return h.response({ status: 'gagal', pesan: 'Tipe laporan harus positive atau negative' }).code(400).header('Cache-Control', 'no-store');
     }
 
     const updatedReport = await ReportWeb.findOneAndUpdate({ id }, updateData, { new: true });
@@ -278,14 +356,14 @@ const updateReportApp = async (request, h) => {
   try {
     const { id } = request.params;
     const decoded = verifyToken(request.headers.authorization);
-    const { appName, description, category, incidentDate, evidence, status } = request.payload;
+    const { appName, description, category, incidentDate, evidence, status, level, reportType } = request.payload;
 
     const report = await ReportApp.findOne({ id });
     if (!report) {
       return h.response({ status: 'gagal', pesan: 'Laporan aplikasi tidak ditemukan' }).code(404).header('Cache-Control', 'no-store');
     }
 
-    if (report.userId !== decoded.id) {
+    if (report.userId !== decoded.id && decoded.role !== 'admin') {
       return h.response({ status: 'gagal', pesan: 'Anda tidak memiliki akses untuk mengedit laporan ini' }).code(403).header('Cache-Control', 'no-store');
     }
 
@@ -296,11 +374,21 @@ const updateReportApp = async (request, h) => {
       incidentDate: incidentDate ? new Date(incidentDate) : report.incidentDate,
       evidence: evidence || report.evidence,
       status: status || report.status,
+      level: level || report.level,
+      reportType: reportType || report.reportType,
       updatedAt: new Date(),
     };
 
     if (incidentDate && isNaN(Date.parse(incidentDate))) {
       return h.response({ status: 'gagal', pesan: 'Tanggal insiden tidak valid' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    if (level && !['low', 'medium', 'high'].includes(level)) {
+      return h.response({ status: 'gagal', pesan: 'Tingkat harus low, medium, atau high' }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    if (reportType && !['positive', 'negative'].includes(reportType)) {
+      return h.response({ status: 'gagal', pesan: 'Tipe laporan harus positive atau negative' }).code(400).header('Cache-Control', 'no-store');
     }
 
     const updatedReport = await ReportApp.findOneAndUpdate({ id }, updateData, { new: true });
@@ -331,7 +419,7 @@ const deleteReportWeb = async (request, h) => {
       return h.response({ status: 'gagal', pesan: 'Laporan web tidak ditemukan' }).code(404).header('Cache-Control', 'no-store');
     }
 
-    if (report.userId !== decoded.id) {
+    if (report.userId !== decoded.id && decoded.role !== 'admin') {
       return h.response({ status: 'gagal', pesan: 'Anda tidak memiliki akses untuk menghapus laporan ini' }).code(403).header('Cache-Control', 'no-store');
     }
 
@@ -360,7 +448,7 @@ const deleteReportApp = async (request, h) => {
       return h.response({ status: 'gagal', pesan: 'Laporan aplikasi tidak ditemukan' }).code(404).header('Cache-Control', 'no-store');
     }
 
-    if (report.userId !== decoded.id) {
+    if (report.userId !== decoded.id && decoded.role !== 'admin') {
       return h.response({ status: 'gagal', pesan: 'Anda tidak memiliki akses untuk menghapus laporan ini' }).code(403).header('Cache-Control', 'no-store');
     }
 

@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { BASE_URL } from '../../utils/constants';
-import { saveReport } from '../indexedDB/reportDB';
+import { saveReport, deleteReport } from '../indexedDB/reportDB';
 
 const handleApiError = (error) => {
   if (error.response) {
     const { status, data } = error.response;
     return {
       status: data.status || 'error',
-      message: data.pesan || 'Terjadi kesalahan pada server',
+      message: data.message || 'Terjadi kesalahan pada server',
       code: status,
     };
   }
@@ -26,7 +26,7 @@ export const createWebReport = async (reportData, token) => {
     await saveReport(response.data.data, 'web');
     return {
       status: response.data.status,
-      message: response.data.pesan,
+      message: response.data.message,
       data: response.data.data,
       code: response.status,
     };
@@ -43,7 +43,7 @@ export const createAppReport = async (reportData, token) => {
     await saveReport(response.data.data, 'app');
     return {
       status: response.data.status,
-      message: response.data.pesan,
+      message: response.data.message,
       data: response.data.data,
       code: response.status,
     };
@@ -60,7 +60,7 @@ export const updateWebReport = async (id, reportData, token) => {
     await saveReport(response.data.data, 'web');
     return {
       status: response.data.status,
-      message: response.data.pesan,
+      message: response.data.message,
       data: response.data.data,
       code: response.status,
     };
@@ -71,13 +71,13 @@ export const updateWebReport = async (id, reportData, token) => {
 
 export const updateAppReport = async (id, reportData, token) => {
   try {
-    const response = await axios.put(`${BASE_URL}/report/app/${id}`, reportData, {
+    const response = await axios.put(`${BASE_URL}/report/${id}`, reportData, {
       headers: { Authorization: `Bearer ${token}` },
     });
     await saveReport(response.data.data, 'app');
     return {
       status: response.data.status,
-      message: response.data.pesan,
+      message: response.data.message,
       data: response.data.data,
       code: response.status,
     };
@@ -94,7 +94,7 @@ export const deleteWebReport = async (id, token) => {
     await deleteReport(id, 'web');
     return {
       status: response.data.status,
-      message: response.data.pesan,
+      message: response.data.message,
       code: response.status,
     };
   } catch (error) {
@@ -110,7 +110,7 @@ export const deleteAppReport = async (id, token) => {
     await deleteReport(id, 'app');
     return {
       status: response.data.status,
-      message: response.data.pesan,
+      message: response.data.message,
       code: response.status,
     };
   } catch (error) {

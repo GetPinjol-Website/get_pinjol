@@ -1,12 +1,20 @@
 import { initDB } from './dbConfig';
 
+const validateReport = (report) => {
+  if (!report.id || !report.appName || !report.description || !report.incidentDate) {
+    throw new Error('Data laporan tidak lengkap');
+  }
+  return true;
+};
+
 export const saveReport = async (report, type = 'web') => {
   try {
+    validateReport(report);
     const db = await initDB();
     const storeName = type === 'web' ? 'webReports' : 'appReports';
     const tx = db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
-    await store.put({ ...report, type });
+    await store.put({ ...report, type, updatedAt: new Date().toISOString() });
     await tx.done;
   } catch (error) {
     console.error(`Gagal menyimpan laporan ${type} ke IndexedDB:`, error);
@@ -74,6 +82,7 @@ export const syncOfflineReports = async (token) => {
             const response = await (type === 'web'
               ? createWebReport(reportData, token)
               : createAppReport(reportData, token));
+            await store.delete(id);
             await store.put(response.data);
           } catch (error) {
             console.error(`Gagal menyinkronkan laporan ${type} ${id}:`, error);

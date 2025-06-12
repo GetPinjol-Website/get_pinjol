@@ -22,6 +22,16 @@ export const modalAnimation = {
   transition: { duration: 0.3 },
 };
 
+// Animasi untuk item individu (misalnya, kartu, baris tabel, input form)
+export const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: 'easeOut' },
+  },
+};
+
 // Helper untuk menerapkan animasi ke komponen
 export const withAnimation = (Component) => {
   return (props) => (

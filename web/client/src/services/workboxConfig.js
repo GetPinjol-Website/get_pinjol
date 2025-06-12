@@ -20,7 +20,7 @@ const reportQueue = new Queue('reportQueue', {
 });
 
 registerRoute(
-  ({ url }) => url.origin === 'http://localhost:9000' && url.pathname.startsWith('/report'),
+  ({ url }) => url.origin === 'http://localhost:9000' && url.pathname.match(/^\/report\/(web|app)/),
   new NetworkFirst({
     cacheName: 'api-report-cache',
     plugins: [
@@ -37,9 +37,9 @@ registerRoute(
 );
 
 registerRoute(
-  ({ url }) => url.origin === 'http://localhost:9000',
+  ({ url }) => url.origin === 'http://localhost:9000' && url.pathname === '/reports',
   new NetworkFirst({
-    cacheName: 'api-cache',
+    cacheName: 'api-reports-cache',
     plugins: [
       {
         cacheableResponse: { statuses: [0, 200] },

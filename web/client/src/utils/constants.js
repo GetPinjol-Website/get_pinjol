@@ -1,7 +1,7 @@
 export const BASE_URL = 'http://localhost:9000';
 
 export const ROLES = {
-  USER: 'admin',
+  USER: 'user',
   ADMIN: 'admin',
 };
 
@@ -29,7 +29,6 @@ export const REPORT_STATUSES = {
   PENDING: 'Menunggu',
   ACCEPTED: 'Diterima',
   REJECTED: 'Ditolak',
-  UNDER_REVIEW: 'Sedang Ditinjau',
 };
 
 export const EDUCATION_CATEGORIES = [

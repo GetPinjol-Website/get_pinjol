@@ -6,62 +6,82 @@ import Table from '../../components/ui/Table';
 import SearchBar from '../../components/ui/SearchBar';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
-import { REPORT_TYPES } from '../../utils/constants';
+import Badge from '../../components/common/Badge';
+import { REPORT_TYPES, REPORT_STATUSES } from '../../utils/constants';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { itemVariants } from '../../utils/animations';
 
 function ReportList({ isOfflineMode }) {
   const [reports, setReports] = useState([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [filters, setFilters] = useState({ appName: '', category: '', type: '' });
+  const [filters, setFilters] = useState({ filters: { appName: '', category: '', type: '' } });
 
   const presenter = new ReportPresenter({
     setLoading: setIsLoading,
-    showError: (message) =>
-      window.Swal.fire({
-        icon: 'error',
-        title: 'Peringatan',
-        text: message,
-        confirmButtonColor: '#658147',
-        background: '#E7F0DC',
-      }),
-    setReports,
+    showError: setError,
+    setReports, // Pastikan setReports diteruskan
   });
 
   useEffect(() => {
     presenter.getAllReports(filters);
-  }, []);
+  }, [filters]);
 
   const handleSearch = (newFilters) => {
-    presenter.getAllReports(newFilters);
+    setFilters(newFilters);
   };
 
-  const headers = ['Tipe', 'Nama Aplikasi', 'Kategori', 'Tanggal Kejadian', 'Status'];
+  const headers = ['Tipe', 'Nama Aplikasi', 'Kategori', 'Tanggal', 'Status'];
 
   const renderRow = (report) => [
-    <td key="type" className="py-4 px-6">{report.type === REPORT_TYPES.WEB ? 'Web' : 'App'}</td>,
-    <td key="appName" className="py-4 px-6">{report.appName}</td>,
-    <td key="category" className="py-4 px-6">{report.category.join(', ')}</td>,
-    <td key="incidentDate" className="py-4 px-6">{new Date(report.incidentDate).toLocaleDateString()}</td>,
-    <td key="status" className="py-4 px-6">{report.status || 'Pending'}</td>
+    <td key="type" className="py-3 px-4"><Badge type={report.type} text={report.type === REPORT_TYPES.WEB ? 'Web' : 'App'} /></td>,
+    <td key="appName" className="py-3 px-4">{report.appName}</td>,
+    <td key="category" className="py-3 px-4">{report.category.join(', ')}</td>,
+    <td key="incidentDate" className="py-3 px-4">{new Date(report.incidentDate).toLocaleDateString()}</td>,
+    <td key="status" className="py-3 px-4">
+      <Badge
+        type={report.status?.toLowerCase() || 'pending'}
+        text={REPORT_STATUSES[report.status?.toUpperCase()] || 'Menunggu'}
+      />
+    </td>,
   ];
 
   return (
-    <FullScreenSection>
-      <motion.div {...pageTransition} className="container">
-        <h1 className="text-2xl font-bold mb-4">Daftar Laporan</h1>
-        <ErrorMessage message={error} onClose={() => setError('')} />
-        {isLoading && <Spinner />}
-        {isOfflineMode && (
-          <p className="text-yellow-600 mb-4">Mode offline: Menampilkan laporan lokal.</p>
-        )}
-        <Card title="Cari Laporan">
-          <SearchBar filters={filters} setFilters={setFilters} onSearch={handleSearch} />
-          <Table headers={headers} data={reports} renderRow={renderRow} />
-        </Card>
-      </motion.div>
-    </FullScreenSection>
+    <div className="bg-pinjol-light-1">
+      <FullScreenSection className="pt-20">
+        <motion.div
+          className="container mx-auto px-4"
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.h1
+            className="text-3xl font-bold text-pinjol-dark-3 mb-6 flex items-center"
+            variants={itemVariants}
+          >
+            <i className="fas fa-list-alt mr-3"></i>
+            Daftar Laporan
+          </motion.h1>
+          {isOfflineMode && (
+            <motion.p
+              className="text-yellow-600 mb-6 flex items-center"
+              variants={itemVariants}
+            >
+              <i className="fas fa-exclamation-circle mr-2"></i>
+              Mode offline: Menampilkan laporan lokal.
+            </motion.p>
+          )}
+          <ErrorMessage message={error} onClose={() => setError('')} />
+          {isLoading && <Spinner />}
+          <Card title="Cari Laporan">
+            <motion.div variants={itemVariants}>
+              <SearchBar filters={filters} setFilters={setFilters} onSearch={handleSearch} />
+            </motion.div>
+            <Table headers={headers} data={reports} renderRow={renderRow} />
+          </Card>
+        </motion.div>
+      </FullScreenSection>
+    </div>
   );
 }
 

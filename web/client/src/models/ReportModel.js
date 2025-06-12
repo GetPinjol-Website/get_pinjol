@@ -33,6 +33,7 @@ class ReportModel {
           ...reportData,
           id: `offline-${Date.now()}`,
           type: REPORT_TYPES.WEB,
+          status: 'pending',
           updatedAt: new Date().toISOString(),
         };
         await saveReport(offlineReport, REPORT_TYPES.WEB);
@@ -56,6 +57,7 @@ class ReportModel {
           ...reportData,
           id: `offline-${Date.now()}`,
           type: REPORT_TYPES.APP,
+          status: 'pending',
           updatedAt: new Date().toISOString(),
         };
         await saveReport(offlineReport, REPORT_TYPES.APP);
