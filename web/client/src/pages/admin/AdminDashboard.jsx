@@ -7,11 +7,13 @@ import Spinner from '../../components/common/Spinner';
 import Sidebar from '../../components/layout/Sidebar';
 import { motion } from 'framer-motion';
 import { pageTransition } from '../../utils/animations';
+import { useNavigate } from 'react-router-dom';
 
 function AdminDashboard() {
     const [reports, setReports] = useState([]);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
 
     const presenter = new AdminPresenter({
         setLoading: setIsLoading,
@@ -25,6 +27,11 @@ function AdminDashboard() {
 
     const headers = ['Nama Aplikasi', 'Kategori', 'Tanggal Kejadian', 'Status'];
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        navigate('/');
+    };
+
     const renderRow = (report) => (
         <>
             <td>{report.appName}</td>
@@ -36,7 +43,7 @@ function AdminDashboard() {
 
     return (
         <motion.div {...pageTransition} className="flex">
-            <Sidebar role="admin" />
+            <Sidebar role="admin" onLogout={handleLogout} />
             <div className="content-with-sidebar">
                 <h1>Dashboard Admin</h1>
                 <ErrorMessage message={error} onClose={() => setError('')} />
