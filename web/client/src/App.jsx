@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Landing from './pages/Landing';
@@ -25,6 +25,7 @@ function App() {
   const [role, setRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const presenter = new AuthPresenter({
     setLoading: setIsLoading,
@@ -34,6 +35,8 @@ function App() {
     showError: (message) => alert(message),
     showSuccess: (message) => console.log(message),
   });
+
+  const hideHeaderFooter = location.pathname === '/login' || location.pathname === '/register';
 
   useEffect(() => {
     const controller = new AbortController();
@@ -50,13 +53,16 @@ function App() {
 
   return (
     <motion.div {...pageTransition} className="flex flex-col min-h-screen w-full">
-      <Header
-        isAuthenticated={isAuthenticated}
-        role={role}
-        setIsAuthenticated={setIsAuthenticated}
-        setRole={setRole}
-        className="w-full"
-      />
+      {!hideHeaderFooter && (
+        <Header
+          isAuthenticated={isAuthenticated}
+          role={role}
+          setIsAuthenticated={setIsAuthenticated}
+          setRole={setRole}
+          className="w-full"
+        />
+      )}
+
       <main className="flex-grow w-full">
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -84,7 +90,10 @@ function App() {
           <Route path="*" element={<h1>404 - Halaman Tidak Ditemukan</h1>} />
         </Routes>
       </main>
-      <Footer className="w-full" />
+
+      {!hideHeaderFooter && <Footer />}
+
+      {/* <Footer className="w-full" /> */}
     </motion.div>
   );
 }

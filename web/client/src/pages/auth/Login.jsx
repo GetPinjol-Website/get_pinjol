@@ -47,8 +47,7 @@ function Login({ setIsAuthenticated, setRole }) {
         };
         try {
             await presenter.handleLogin(credentials);
-            // Pastikan state diperbarui setelah login berhasil
-            setIsAuthenticated(true); // Sinkronisasi dengan App.jsx
+            setIsAuthenticated(true);
         } catch (error) {
             setError(error.message || 'Login gagal');
         }
