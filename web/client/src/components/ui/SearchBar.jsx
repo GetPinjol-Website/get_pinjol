@@ -1,11 +1,9 @@
 import React from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
-import { EDUCATION_CATEGORIES } from '../../utils/constants';
-import { motion } from 'framer-motion';
-import { itemVariants } from '../../utils/animations';
+import { REPORT_CATEGORIES, REPORT_TYPES } from '../../utils/constants';
 
-function SearchFilter({ onSearch, filters, setFilters }) {
+export default function SearchBar({ onSearch, filters, setFilters }) {
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
@@ -16,45 +14,51 @@ function SearchFilter({ onSearch, filters, setFilters }) {
   };
 
   return (
-    <motion.form
-      onSubmit={handleSubmit}
-      className="flex flex-row gap-2 mb-2"
-      variants={itemVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 mb-6">
       <Input
-        label="Cari Edukasi"
-        name="search"
-        value={filters.search || ''}
+        label="Nama Aplikasi"
+        name="appName"
+        value={filters.appName || ''}
         onChange={handleChange}
-        placeholder="Cari judul edukasi..."
+        placeholder="Cari nama aplikasi..."
         className="flex-grow"
       />
-      <div className="input-group flex-shrink-0 border-pinjol-dark-4">
+      <div className="input-group">
         <label className="block text-pgray-700 font-medium mb-1">Kategori</label>
         <select
           name="category"
           value={filters.category || ''}
           onChange={handleChange}
-          className="w-full px-2 py-1 border border-pinjol-light-4 rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-pinjol-light-4 rounded-lg"
         >
-          <option value="">Semua Kategori</option>
-          {EDUCATION_CATEGORIES.map((cat) => (
+          <option value="">Semua</option>
+          {REPORT_CATEGORIES.map((cat) => (
             <option key={cat} value={cat}>
-              {cat}
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
             </option>
           ))}
         </select>
       </div>
-      <Button
+      <div className="input-group">
+        <label className="block text-pgray-700 font-medium mb-1">Tipe</label>
+        <select
+          name="type"
+          value={filters.type || ''}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border border-pinjol-light-4 rounded-lg"
+        >
+          <option value="">Semua</option>
+          <option value={REPORT_TYPES.WEB}>Web</option>
+          <option value={REPORT_TYPES.APP}>App</option>
+        </select>
+      </div>
+      <motion.button
         type="submit"
-        className="bg-pinjol-dark-3 text-white px-3 py-1 mt-2 sm:py-0 sm:mt-0"
+        whileHover={buttonHover}
+        className="bg-pinjol-dark-3 text-white px-4 h-[36px] min-h-0 text-sm flex items-center justify-center"
       >
         <i className="fas fa-search mr-2"></i> Cari
-      </Button>
-    </motion.form>
+      </motion.button>
+    </form>
   );
 }
-
-export default SearchFilter;

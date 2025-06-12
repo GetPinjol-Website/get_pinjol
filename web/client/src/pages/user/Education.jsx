@@ -20,8 +20,8 @@ function Education() {
     setLoading: setIsLoading,
     showError: setError,
     setEducations,
-    navigate: () => {},
-    showSuccess: () => {},
+    navigate: () => { },
+    showSuccess: () => { },
   });
 
   useEffect(() => {
@@ -67,14 +67,14 @@ function Education() {
                   title={edu.title}
                   className="h-full flex flex-col justify-between bg-white hover:bg-pinjol-light-2 transition-colors duration-300 p-4"
                 >
-                  <motion.div variants={itemVariants}>
-                    <h3 className="text-lg font-semibold text-pinjol-dark-2 mb-3 truncate text-overflow-ellipsis whitespace-nowrap overflow-hidden">
+                  <motion.div variants={itemVariants} className="flex flex-col h-full">
+                    <h3 className="text-lg font-semibold text-pinjol-dark-2 text-sm mb-2 line-clamp-2">
                       {edu.title}
                     </h3>
-                    <p className="text-pinjol-dark-1 mb-4 flex-grow">
-                      {edu.content.substring(0, 100)}...
+                    <p className="text-pinjol-dark-1 mb-4 line-clamp-3">
+                      {edu.content}
                     </p>
-                    <div className="flex justify-between text-sm text-pinjol-dark-4">
+                    <div className="mt-auto flex justify-between text-sm text-pinjol-dark-4">
                       <span>
                         <i className="fas fa-tag mr-1"></i>
                         {edu.category || 'N/A'}
