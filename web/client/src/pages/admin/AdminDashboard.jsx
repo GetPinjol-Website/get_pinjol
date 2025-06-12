@@ -28,14 +28,14 @@ function AdminDashboard() {
     const renderRow = (report) => (
         <>
             <td>{report.appName}</td>
-            <td>{report.category}</td>
+            <td>{report.category.join(', ')}</td> {/* Perbaiki untuk array category */}
             <td>{new Date(report.incidentDate).toLocaleDateString()}</td>
-            <td>Belum Diverifikasi</td>
+            <td>{report.status || 'Belum Diverifikasi'}</td>
         </>
     );
 
     return (
-        <motion.div {...pageTransition} class="flex">
+        <motion.div {...pageTransition} className="flex">
             <Sidebar role="admin" />
             <div className="content-with-sidebar">
                 <h1>Dashboard Admin</h1>

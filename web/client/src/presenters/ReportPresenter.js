@@ -121,7 +121,17 @@ class ReportPresenter {
       this.view.setLoading(true);
       const token = UserModel.getToken();
       const reports = await ReportModel.getAllReports(filters, token);
-      this.view.setReports(reports);
+      if (filters.type === 'app') {
+        this.view.setTotalAppReports(reports.length);
+      } else if (filters.type === 'web' && reports.length > 0) {
+        const counts = {};
+        reports.forEach(report => {
+          counts[report.appName] = (counts[report.appName] || 0) + 1;
+        });
+        const mostReported = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, '');
+        this.view.setMostReportedWeb({ appName: mostReported, count: counts[mostReported] || 0 });
+      }
+      return reports;
     } catch (error) {
       this.view.showError(error.message || 'Gagal mengambil daftar laporan');
     } finally {
@@ -135,7 +145,7 @@ class ReportPresenter {
       const token = UserModel.getToken();
       if (!token) throw new Error('Autentikasi diperlukan');
       const reports = await ReportModel.getUserReports(filters, token);
-      this.view.setReports(reports);
+      this.view.setReports(reports); // Tetap digunakan untuk dashboard/user
     } catch (error) {
       this.view.showError(error.message || 'Gagal mengambil daftar laporan pengguna');
     } finally {

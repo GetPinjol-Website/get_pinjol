@@ -8,7 +8,8 @@ import { motion } from 'framer-motion';
 import DecorativeImage from '../components/common/DecorativeImage';
 
 function Landing() {
-    const [topReports, setTopReports] = useState([]);
+    const [totalAppReports, setTotalAppReports] = useState(0);
+    const [mostReportedWeb, setMostReportedWeb] = useState({ appName: '', count: 0 });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [checkInput, setCheckInput] = useState('');
@@ -26,11 +27,28 @@ function Landing() {
                 fontFamily: 'Roboto, sans-serif',
             });
         },
-        setTopReports,
+        setTotalAppReports,
+        setMostReportedWeb,
     });
 
     useEffect(() => {
-        presenter.getTopReports();
+        const fetchStatistics = async () => {
+            try {
+                await presenter.getAllReports({ type: 'app' });
+                const webReports = await presenter.getAllReports({ type: 'web' });
+                if (webReports && webReports.length > 0) {
+                    const counts = {};
+                    webReports.forEach(report => {
+                        counts[report.appName] = (counts[report.appName] || 0) + 1;
+                    });
+                    const mostReported = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+                    setMostReportedWeb({ appName: mostReported, count: counts[mostReported] });
+                }
+            } catch (error) {
+                setError('Gagal mengambil statistik laporan');
+            }
+        };
+        fetchStatistics();
     }, []);
 
     const handleCheckSubmit = (e) => {
@@ -206,7 +224,7 @@ function Landing() {
                         Ribuan pengguna telah melaporkan pinjol berisiko. Lihat data terbaru dari komunitas kami dan lindungi diri Anda dari penipuan!
                     </motion.p>
                     <motion.div
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true }}
@@ -218,28 +236,26 @@ function Landing() {
                             },
                         }}
                     >
-                        {topReports.length > 0 ? (
-                            topReports.map((report) => (
-                                <motion.div
-                                    key={report._id}
-                                    className="bg-pinjol-light-2 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center"
-                                    variants={itemVariants}
-                                >
-                                    <i className="fas fa-exclamation-circle text-3xl text-pinjol-dark-3 mr-4"></i>
-                                    <div>
-                                        <h3 className="text-xl font-semibold text-pinjol-dark-1">{report._id}</h3>
-                                        <p className="text-pinjol-dark-2">{report.count} laporan dari komunitas</p>
-                                    </div>
-                                </motion.div>
-                            ))
-                        ) : (
-                            <motion.div
-                                className="bg-pinjol-light-2 p-6 rounded-lg shadow-md col-span-full text-center"
-                                variants={itemVariants}
-                            >
-                                <p className="text-pinjol-dark-1">Belum ada laporan. Jadilah yang pertama melaporkan!</p>
-                            </motion.div>
-                        )}
+                        <motion.div
+                            className="bg-pinjol-light-2 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center"
+                            variants={itemVariants}
+                        >
+                            <i className="fas fa-mobile-alt text-3xl text-pinjol-dark-3 mr-4"></i>
+                            <div>
+                                <h3 className="text-xl font-semibold text-pinjol-dark-1">Total Laporan Aplikasi</h3>
+                                <p className="text-pinjol-dark-2">{totalAppReports} laporan</p>
+                            </div>
+                        </motion.div>
+                        <motion.div
+                            className="bg-pinjol-light-2 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center"
+                            variants={itemVariants}
+                        >
+                            <i className="fas fa-globe text-3xl text-pinjol-dark-3 mr-4"></i>
+                            <div>
+                                <h3 className="text-xl font-semibold text-pinjol-dark-1">Laporan Web Paling Banyak</h3>
+                                <p className="text-pinjol-dark-2">{mostReportedWeb.appName} ({mostReportedWeb.count} laporan)</p>
+                            </div>
+                        </motion.div>
                     </motion.div>
                     <motion.div
                         className="text-center mt-10"

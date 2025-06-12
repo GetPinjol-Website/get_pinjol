@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Landing from './pages/Landing';
@@ -23,62 +23,80 @@ import { pageTransition } from './utils/animations';
 import { isOnline } from './utils/helpers';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [role, setRole] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem('token');
+    return !!token;
+  });
+  const [role, setRole] = useState(() => {
+    const storedRole = localStorage.getItem('role');
+    return storedRole || null;
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isOfflineMode, setIsOfflineMode] = useState(!isOnline());
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const authPresenter = new AuthPresenter({
-    setLoading: setIsLoading,
-    setToken: setIsAuthenticated,
-    setRole,
-    navigate,
-    showError: (message) =>
-      window.Swal.fire({
-        icon: 'error',
-        title: 'Peringatan',
-        text: message,
-        confirmButtonColor: '#658147',
-        background: '#E7F0DC',
+  // Gunakan useMemo untuk mencegah pembuatan instance presenter baru pada setiap render
+  const authPresenter = useMemo(
+    () =>
+      new AuthPresenter({
+        setLoading: setIsLoading,
+        setToken: setIsAuthenticated,
+        setRole,
+        navigate,
+        showError: (message) =>
+          window.Swal.fire({
+            icon: 'error',
+            title: 'Peringatan',
+            text: message,
+            confirmButtonColor: '#658147',
+            background: '#E7F0DC',
+          }),
+        showSuccess: (message) =>
+          window.Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: message,
+            confirmButtonColor: '#658147',
+            background: '#E7F0DC',
+          }),
       }),
-    showSuccess: (message) =>
-      window.Swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: message,
-        confirmButtonColor: '#658147',
-        background: '#E7F0DC',
-      }),
-  });
+    [navigate, setIsLoading, setIsAuthenticated, setRole]
+  );
 
-  const reportPresenter = new ReportPresenter({
-    setLoading: setIsLoading,
-    showError: (message) =>
-      window.Swal.fire({
-        icon: 'error',
-        title: 'Peringatan',
-        text: message,
-        confirmButtonColor: '#658147',
-        background: '#E7F0DC',
+  const reportPresenter = useMemo(
+    () =>
+      new ReportPresenter({
+        setLoading: setIsLoading,
+        showError: (message) =>
+          window.Swal.fire({
+            icon: 'error',
+            title: 'Peringatan',
+            text: message,
+            confirmButtonColor: '#658147',
+            background: '#E7F0DC',
+          }),
+        showSuccess: (message) =>
+          window.Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: message,
+            confirmButtonColor: '#658147',
+            background: '#E7F0DC',
+          }),
+        navigate,
       }),
-    showSuccess: (message) =>
-      window.Swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: message,
-        confirmButtonColor: '#658147',
-        background: '#E7F0DC',
-      }),
-    navigate,
-  });
+    [navigate, setIsLoading]
+  );
 
   useEffect(() => {
     const controller = new AbortController();
-    authPresenter.checkAuthStatus(controller.signal).catch((error) => {
-      console.error('Error checking auth status:', error);
-      setIsLoading(false);
-    });
+    // Hanya panggil checkAuthStatus jika belum terautentikasi atau role belum diketahui
+    if (!isAuthenticated || !role) {
+      authPresenter.checkAuthStatus(controller.signal);
+    } else {
+      setIsLoading(false); // Hentikan loading jika sudah terautentikasi
+    }
 
     const handleOffline = () => {
       window.Swal.fire({
@@ -112,7 +130,7 @@ function App() {
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
     };
-  }, [isAuthenticated]);
+  }, [authPresenter, reportPresenter, isAuthenticated, role, navigate]);
 
   if (isLoading) {
     return <div className="spinner"><div></div></div>;

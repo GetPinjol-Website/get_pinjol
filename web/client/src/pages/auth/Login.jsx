@@ -11,13 +11,11 @@ import { isValidUsername } from '../../utils/helpers';
 import { motion } from 'framer-motion';
 import { pageTransition } from '../../utils/animations';
 
-function Login() {
+function Login({ setIsAuthenticated, setRole }) {
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [role, setRole] = useState(null);
     const navigate = useNavigate();
 
     const presenter = new AuthPresenter({
@@ -26,7 +24,7 @@ function Login() {
         showSuccess: setSuccess,
         navigate,
         setToken: setIsAuthenticated,
-        setRole: setRole,
+        setRole,
     });
 
     const handleChange = (e) => {
@@ -47,7 +45,13 @@ function Login() {
             username: formData.username,
             password: formData.password,
         };
-        await presenter.handleLogin(credentials);
+        try {
+            await presenter.handleLogin(credentials);
+            // Pastikan state diperbarui setelah login berhasil
+            setIsAuthenticated(true); // Sinkronisasi dengan App.jsx
+        } catch (error) {
+            setError(error.message || 'Login gagal');
+        }
     };
 
     return (
