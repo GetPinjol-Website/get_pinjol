@@ -6,7 +6,7 @@ export const saveEducation = async (education) => {
     const db = await initDB();
     const tx = db.transaction('educations', 'readwrite');
     const store = tx.objectStore('educations');
-    await store.put(education);
+    await store.put({ ...education, updatedAt: new Date().toISOString() });
     await tx.done;
   } catch (error) {
     console.error('Gagal menyimpan edukasi ke IndexedDB:', error);

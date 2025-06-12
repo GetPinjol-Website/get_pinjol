@@ -19,6 +19,7 @@ const reportQueue = new Queue('reportQueue', {
   },
 });
 
+// Cache untuk laporan (web dan app)
 registerRoute(
   ({ url }) => url.origin === 'http://localhost:9000' && url.pathname.match(/^\/report\/(web|app)/),
   new NetworkFirst({
@@ -36,6 +37,7 @@ registerRoute(
   })
 );
 
+// Cache untuk daftar laporan
 registerRoute(
   ({ url }) => url.origin === 'http://localhost:9000' && url.pathname === '/reports',
   new NetworkFirst({
@@ -48,6 +50,7 @@ registerRoute(
   })
 );
 
+// Cache untuk gambar
 registerRoute(
   ({ request }) => request.destination === 'image',
   new StaleWhileRevalidate({
@@ -60,6 +63,36 @@ registerRoute(
   })
 );
 
+// Cache untuk edukasi
+registerRoute(
+  ({ url }) => url.origin === 'http://localhost:9000' && url.pathname.match(/^\/education/),
+  new NetworkFirst({
+    cacheName: 'api-education-cache',
+    plugins: [
+      {
+        cacheableResponse: { statuses: [0, 200] },
+      },
+    ],
+  })
+);
+
+// Hindari caching untuk login dan registrasi
+registerRoute(
+  ({ url }) => url.pathname.match(/^\/(login|register)/),
+  new NetworkFirst({
+    cacheName: 'api-auth-cache',
+    plugins: [
+      {
+        cacheableResponse: { statuses: [0, 200] },
+        cacheWillUpdate: async ({ response }) => {
+          return null; // Jangan cache respons login/register
+        },
+      },
+    ],
+  })
+);
+
+// Penanganan offline untuk laporan
 self.addEventListener('fetch', (event) => {
   if (!navigator.onLine && event.request.url.includes('/report')) {
     event.respondWith(

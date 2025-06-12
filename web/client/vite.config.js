@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [
@@ -10,7 +10,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       srcDir: 'public',
-      filename: 'sw.js', 
+      filename: 'sw.js',
       strategies: 'injectManifest',
       includeAssets: ['favicon.ico', 'assets/icons/*.png'],
       manifest: {
@@ -30,7 +30,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico}'],
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.origin === 'http://localhost:9000' && !url.pathname.includes('/auth'),
+            urlPattern: ({ url }) => url.origin === 'http://localhost:9000' && !url.pathname.match(/^\/(login|register)/),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
@@ -50,8 +50,8 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: true, 
-        type: 'module', 
+        enabled: true,
+        type: 'module',
       },
     }),
   ],

@@ -1,16 +1,15 @@
 import EducationModel from '../models/EducationModel';
 
-// Presenter untuk mengelola logika konten edukasi
 class EducationPresenter {
   constructor(view) {
     this.view = view;
   }
 
   // Membuat konten edukasi baru
-  async createEducation(educationData) {
+  async createEducation(educationData, token) {
     try {
       this.view.setLoading(true);
-      const response = await EducationModel.createEducation(educationData);
+      const response = await EducationModel.createEducation(educationData, token);
       this.view.showSuccess('Konten edukasi berhasil dibuat');
       this.view.navigate('/admin/education');
       return response;
@@ -49,10 +48,10 @@ class EducationPresenter {
   }
 
   // Memperbarui konten edukasi
-  async updateEducation(id, educationData) {
+  async updateEducation(id, educationData, token) {
     try {
       this.view.setLoading(true);
-      const response = await EducationModel.updateEducation(id, educationData);
+      const response = await EducationModel.updateEducation(id, educationData, token);
       this.view.showSuccess('Konten edukasi berhasil diperbarui');
       this.view.navigate('/admin/education');
       return response;
@@ -64,14 +63,27 @@ class EducationPresenter {
   }
 
   // Menghapus konten edukasi
-  async deleteEducation(id) {
+  async deleteEducation(id, token) {
     try {
       this.view.setLoading(true);
-      const response = await EducationModel.deleteEducation(id);
+      const response = await EducationModel.deleteEducation(id, token);
       this.view.showSuccess('Konten edukasi berhasil dihapus');
       return response;
     } catch (error) {
       this.view.showError(error.message || 'Gagal menghapus konten edukasi');
+    } finally {
+      this.view.setLoading(false);
+    }
+  }
+
+  // Sinkronisasi data offline
+  async syncOfflineEducations(token) {
+    try {
+      this.view.setLoading(true);
+      await EducationModel.syncOfflineEducations(token);
+      this.view.showSuccess('Data edukasi offline berhasil disinkronkan');
+    } catch (error) {
+      this.view.showError(error.message || 'Gagal menyinkronkan data edukasi offline');
     } finally {
       this.view.setLoading(false);
     }

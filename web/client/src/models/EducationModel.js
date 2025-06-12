@@ -1,12 +1,11 @@
 import { createEducation, getAllEducation, getEducationById, updateEducation, deleteEducation } from '../services/api/educationApi';
 import { saveEducation, getEducation, getAllEducationsDB, deleteEducation as deleteEducationDB } from '../services/indexedDB/educationDB';
 
-// Model untuk mengelola data konten edukasi
 class EducationModel {
   // Membuat konten edukasi baru
-  static async createEducation(educationData) {
+  static async createEducation(educationData, token) {
     try {
-      const response = await createEducation(educationData);
+      const response = await createEducation(educationData, token);
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
@@ -14,7 +13,7 @@ class EducationModel {
       await saveEducation(response.data);
       return response.data;
     } catch (error) {
-      // Coba simpan ke IndexedDB jika offline
+      // Simpan ke IndexedDB jika offline
       if (error.message.includes('Koneksi jaringan gagal')) {
         const offlineEducation = { ...educationData, id: `offline-${Date.now()}`, updatedAt: new Date().toISOString() };
         await saveEducation(offlineEducation);
@@ -31,9 +30,11 @@ class EducationModel {
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
+      // Simpan semua data ke IndexedDB
+      await Promise.all(response.data.map((edu) => saveEducation(edu)));
       return response.data;
     } catch (error) {
-      // Coba ambil dari IndexedDB jika offline
+      // Ambil dari IndexedDB jika offline
       if (error.message.includes('Koneksi jaringan gagal')) {
         const educations = await getAllEducationsDB();
         return educations.filter((edu) =>
@@ -52,9 +53,11 @@ class EducationModel {
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
+      // Simpan ke IndexedDB
+      await saveEducation(response.data);
       return response.data;
     } catch (error) {
-      // Coba ambil dari IndexedDB jika offline
+      // Ambil dari IndexedDB jika offline
       if (error.message.includes('Koneksi jaringan gagal')) {
         const education = await getEducation(id);
         if (education) return education;
@@ -64,9 +67,9 @@ class EducationModel {
   }
 
   // Memperbarui konten edukasi
-  static async updateEducation(id, educationData) {
+  static async updateEducation(id, educationData, token) {
     try {
-      const response = await updateEducation(id, educationData);
+      const response = await updateEducation(id, educationData, token);
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
@@ -74,14 +77,19 @@ class EducationModel {
       await saveEducation({ ...educationData, id });
       return response;
     } catch (error) {
+      // Tandai untuk sinkronisasi ulang jika offline
+      if (error.message.includes('Koneksi jaringan gagal')) {
+        await saveEducation({ ...educationData, id, updatedAt: new Date().toISOString(), needsSync: true });
+        return { status: 'sukses', message: 'Perubahan disimpan lokal, akan disinkronkan saat online' };
+      }
       throw new Error(error.message || 'Gagal memperbarui konten edukasi');
     }
   }
 
   // Menghapus konten edukasi
-  static async deleteEducation(id) {
+  static async deleteEducation(id, token) {
     try {
-      const response = await deleteEducation(id);
+      const response = await deleteEducation(id, token);
       if (response.status !== 'sukses') {
         throw new Error(response.message);
       }
@@ -89,7 +97,37 @@ class EducationModel {
       await deleteEducationDB(id);
       return response;
     } catch (error) {
+      // Tandai untuk penghapusan saat online jika offline
+      if (error.message.includes('Koneksi jaringan gagal')) {
+        await saveEducation({ id, deleted: true, needsSync: true });
+        return { status: 'sukses', message: 'Penghapusan disimpan lokal, akan disinkronkan saat online' };
+      }
       throw new Error(error.message || 'Gagal menghapus konten edukasi');
+    }
+  }
+
+  // Sinkronisasi data offline
+  static async syncOfflineEducations(token) {
+    try {
+      const educations = await getAllEducationsDB();
+      const offlineEducations = educations.filter((edu) => edu.id.startsWith('offline-') || edu.needsSync);
+      for (const edu of offlineEducations) {
+        if (edu.deleted) {
+          await deleteEducation(edu.id, token);
+          await deleteEducationDB(edu.id);
+        } else if (edu.needsSync) {
+          const { id, needsSync, updatedAt, ...educationData } = edu;
+          await updateEducation(id, educationData, token);
+          await saveEducation({ ...educationData, id });
+        } else {
+          const { id, ...educationData } = edu;
+          const response = await createEducation(educationData, token);
+          await deleteEducationDB(id);
+          await saveEducation(response.data);
+        }
+      }
+    } catch (error) {
+      throw new Error(error.message || 'Gagal menyinkronkan data edukasi offline');
     }
   }
 }
