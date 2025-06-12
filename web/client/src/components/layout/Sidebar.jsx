@@ -27,7 +27,7 @@ function Sidebar({ role, onLogout }) {
     >
       <div className="flex justify-between items-center p-4 border-b border-pinjol-dark-4">
         <span className="text-lg font-semibold">
-          {role === 'admin' ? 'Admin Panel' : 'User Panel'}
+          {role === 'admin' ? 'Menu' : 'User Panel'}
         </span>
       </div>
       <ul className="flex-grow p-4 space-y-2">
@@ -45,8 +45,7 @@ function Sidebar({ role, onLogout }) {
       <div className="p-4">
         <button
           onClick={onLogout}
-          className="w-full bg-pinjol-dark-1 text-pinjol-light-1 hover:bg-pinjol-dark-2 transition duration-300 py-2 rounded"
-        >
+          className="w-full bg-pinjol-dark-1 text-pinjol-light-1 hover:bg-pinjol-dark-2 transition duration-300 py-2 rounded">
           <i className="fas fa-sign-out-alt mr-2"></i> Keluar
         </button>
       </div>

@@ -47,8 +47,7 @@ function Login({ setIsAuthenticated, setRole }) {
         };
         try {
             await presenter.handleLogin(credentials);
-            // Pastikan state diperbarui setelah login berhasil
-            setIsAuthenticated(true); // Sinkronisasi dengan App.jsx
+            setIsAuthenticated(true);
         } catch (error) {
             setError(error.message || 'Login gagal');
         }
@@ -57,14 +56,13 @@ function Login({ setIsAuthenticated, setRole }) {
     return (
         <motion.div
             {...pageTransition}
-            className="min-h-screen bg-pinjol-light-1 flex items-center justify-center font-roboto relative overflow-hidden pt-16"
+            className="min-h-screen bg-pinjol-light-1 flex items-center justify-center font-roboto relative overflow-hidden py-8"
         >
             <div
                 className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center opacity-10"
             ></div>
-            <div className="relative z-10 container mx-auto px-4 max-w-md">
+            <div className="relative z-10 bg-pinjol-light-2 p-8 rounded-lg shadow-lg max-w-3xl w-full mx-auto font-roboto">
                 <motion.div
-                    className="bg-pinjol-light-2 p-8 rounded-lg shadow-lg"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
