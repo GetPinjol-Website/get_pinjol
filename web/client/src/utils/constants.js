@@ -40,7 +40,6 @@ export const EDUCATION_CATEGORIES = [
   'Pencegahan Penipuan: Fraud Prevention',
   'Manajemen Utang: Debt Management',
   'Investasi Aman: Safe Investment',
-  'Lainnya: Others',
 ];
 
 export const EVIDENCE_PLACEHOLDER = 'Masukkan link bukti, misalnya: https://example.com/bukti.jpg';

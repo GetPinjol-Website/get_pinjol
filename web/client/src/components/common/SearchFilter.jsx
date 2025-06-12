@@ -18,7 +18,7 @@ function SearchFilter({ onSearch, filters, setFilters }) {
   return (
     <motion.form
       onSubmit={handleSubmit}
-      className="flex flex-row gap-2 mb-2"
+      className="flex flex-col md:flex-row gap-4 mb-8 bg-pinjol-light-2 p-6 rounded-xl shadow-md"
       variants={itemVariants}
       initial="hidden"
       animate="visible"
@@ -31,13 +31,13 @@ function SearchFilter({ onSearch, filters, setFilters }) {
         placeholder="Cari judul edukasi..."
         className="flex-grow"
       />
-      <div className="input-group flex-shrink-0 border-pinjol-dark-4">
+      <div className="input-group">
         <label className="block text-pgray-700 font-medium mb-1">Kategori</label>
         <select
           name="category"
           value={filters.category || ''}
           onChange={handleChange}
-          className="w-full px-2 py-1 border border-pinjol-light-4 rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-pinjol-light-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-pinjol-dark-3"
         >
           <option value="">Semua Kategori</option>
           {EDUCATION_CATEGORIES.map((cat) => (
@@ -49,7 +49,7 @@ function SearchFilter({ onSearch, filters, setFilters }) {
       </div>
       <Button
         type="submit"
-        className="bg-pinjol-dark-3 text-white px-3 py-1 mt-2 sm:py-0 sm:mt-0"
+        className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2 mt-6 md:mt-0"
       >
         <i className="fas fa-search mr-2"></i> Cari
       </Button>

@@ -14,136 +14,229 @@ import Sidebar from '../../components/layout/Sidebar';
 import { EDUCATION_CATEGORIES } from '../../utils/constants';
 import { isValidDate } from '../../utils/helpers';
 import { motion } from 'framer-motion';
-import { pageTransition } from '../../utils/animations';
+import { itemVariants } from '../../utils/animations';
 
 function EducationManagement() {
-    const [educations, setEducations] = useState([]);
-    const [formData, setFormData] = useState({
-        title: '',
-        content: '',
-        date: '',
-        category: '',
-    });
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const navigate = useNavigate();
+  const [educations, setEducations] = useState([]);
+  const [formData, setFormData] = useState({
+    id: null,
+    title: '',
+    content: '',
+    date: '',
+    category: '',
+  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-    const presenter = new EducationPresenter({
-        setLoading: setIsLoading,
-        showError: setError,
-        showSuccess: setSuccess,
-        setEducations,
-        navigate,
-    });
+  const presenter = new EducationPresenter({
+    setLoading: setIsLoading,
+    showError: setError,
+    showSuccess: setSuccess,
+    setEducations,
+    navigate,
+  });
 
-    useEffect(() => {
+  useEffect(() => {
+    presenter.getAllEducation();
+  }, []);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.title || !formData.content || !formData.date) {
+      setError('Judul, konten, dan tanggal wajib diisi');
+      return;
+    }
+    if (!isValidDate(formData.date)) {
+      setError('Tanggal tidak valid');
+      return;
+    }
+    try {
+      if (isEditMode) {
+        await presenter.updateEducation(formData.id, {
+          title: formData.title,
+          content: formData.content,
+          date: formData.date,
+          category: formData.category,
+        });
+      } else {
+        await presenter.createEducation({
+          title: formData.title,
+          content: formData.content,
+          date: formData.date,
+          category: formData.category,
+        });
+      }
+      setFormData({ id: null, title: '', content: '', date: '', category: '' });
+      setIsModalOpen(false);
+      setIsEditMode(false);
+    } catch (err) {
+      setError(err.message || 'Gagal menyimpan konten');
+    }
+  };
+
+  const handleEdit = (edu) => {
+    setFormData({
+      id: edu.id,
+      title: edu.title,
+      content: edu.content,
+      date: edu.date.split('T')[0], // Format untuk input date
+      category: edu.category || '',
+    });
+    setIsEditMode(true);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus konten ini?')) {
+      try {
+        await presenter.deleteEducation(id);
         presenter.getAllEducation();
-    }, []);
+      } catch (err) {
+        setError(err.message || 'Gagal menghapus konten');
+      }
+    }
+  };
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+  const openAddModal = () => {
+    setFormData({ id: null, title: '', content: '', date: '', category: '' });
+    setIsEditMode(false);
+    setIsModalOpen(true);
+  };
 
-    const handleSubmit = async () => {
-        if (!formData.title || !formData.content || !formData.date) {
-            setError('Judul, konten, dan tanggal wajib diisi');
-            return;
-        }
-        if (!isValidDate(formData.date)) {
-            setError('Tanggal tidak valid');
-            return;
-        }
-        await presenter.createEducation(formData);
-        setFormData({ title: '', content: '', date: '', category: '' });
-        setIsModalOpen(false);
-    };
+  const headers = ['Judul', 'Kategori', 'Tanggal', 'Aksi'];
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus konten ini?')) {
-            await presenter.deleteEducation(id);
-            presenter.getAllEducation();
-        }
-    };
+  const renderRow = (edu) => (
+    <>
+      <td className="py-4 px-6">{edu.title}</td>
+      <td className="py-4 px-6">{edu.category || 'N/A'}</td>
+      <td className="py-4 px-6">{new Date(edu.date).toLocaleDateString('id-ID')}</td>
+      <td className="py-4 px-6 flex space-x-2">
+        <Button
+          onClick={() => handleEdit(edu)}
+          className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2 px-3 py-1"
+        >
+          <i className="fas fa-edit mr-2"></i> Edit
+        </Button>
+        <Button
+          onClick={() => handleDelete(edu.id)}
+          className="bg-red-500 text-white hover:bg-red-600 px-3 py-1"
+        >
+          <i className="fas fa-trash mr-2"></i> Hapus
+        </Button>
+      </td>
+    </>
+  );
 
-    const headers = ['Judul', 'Kategori', 'Tanggal', 'Aksi'];
-
-    const renderRow = (edu) => (
-        <>
-            <td>{edu.title}</td>
-            <td>{edu.category || 'N/A'}</td>
-            <td>{new Date(edu.date).toLocaleDateString()}</td>
-            <td>
+  return (
+    <motion.div
+      className="flex min-h-screen bg-pinjol-light-1 font-roboto"
+      initial="hidden"
+      animate="visible"
+      variants={itemVariants}
+    >
+      <Sidebar role="admin" />
+      <div className="flex-1 flex justify-center items-start py-6 overflow-x-hidden">
+        <div className="container mx-auto max-w-6xl px-4 w-full">
+          <h1 className="text-4xl font-bold text-pinjol-dark-3 mb-8 text-center">
+            Manajemen Edukasi
+          </h1>
+          <ErrorMessage message={error} onClose={() => setError('')} />
+          <SuccessMessage message={success} onClose={() => setSuccess('')} />
+          {isLoading && <Spinner />}
+          <Card title="Pratinjau Konten" className="mb-6">
+            <p className="text-pinjol-dark-2 text-sm">
+              Klik "Edit" untuk melihat pratinjau konten di modal, atau tambah konten baru dengan tombol di bawah.
+            </p>
+            <Button
+              onClick={openAddModal}
+              className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2 mt-4"
+            >
+              <i className="fas fa-plus mr-2"></i> Tambah Konten
+            </Button>
+          </Card>
+          <Card title="Daftar Konten Edukasi">
+            <Table headers={headers} data={educations} renderRow={renderRow} />
+          </Card>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setIsEditMode(false);
+              setFormData({ id: null, title: '', content: '', date: '', category: '' });
+            }}
+            title={isEditMode ? 'Edit Konten Edukasi' : 'Tambah Konten Edukasi'}
+          >
+            <div className="max-w-4xl mx-auto px-4">
+              <Form onSubmit={handleSubmit}>
+                <Input
+                  label="Judul"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  className="w-full"
+                />
+                <div className="mb-4">
+                  <label className="block text-pinjol-dark-2 font-medium mb-1">
+                    Konten<span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="content"
+                    value={formData.content}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-pinjol-light-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-pinjol-dark-3"
+                    rows="5"
+                  ></textarea>
+                </div>
+                <Input
+                  label="Tanggal"
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  required
+                  className="w-full"
+                />
+                <div className="input-group mb-4">
+                  <label className="block text-pinjol-dark-2 font-medium mb-1">
+                    Kategori
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-pinjol-light-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-pinjol-dark-3"
+                  >
+                    <option value="">Pilih Kategori</option>
+                    {EDUCATION_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <Button
-                    onClick={() => handleDelete(edu.id)}
-                    className="btn-danger"
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2 w-full"
                 >
-                    Hapus
+                  <i className="fas fa-save mr-2"></i> Simpan
                 </Button>
-            </td>
-        </>
-    );
-
-    return (
-        <motion.div {...pageTransition} className="flex">
-            <Sidebar role="admin" />
-            <div className="content-with-sidebar">
-                <h1>Manajemen Edukasi</h1>
-                <ErrorMessage message={error} onClose={() => setError('')} />
-                <SuccessMessage message={success} onClose={() => setSuccess('')} />
-                {isLoading && <Spinner />}
-                <Card title="Daftarkan Konten Edukasi">
-                    <Button onClick={() => setIsModalOpen(true)}>
-                        Tambah Konten
-                    </Button>
-                    <Table headers={headers} data={educations} renderRow={renderRow} />
-                </Card>
-                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Tambah Konten Edukasi">
-                    <Form onSubmit={handleSubmit}>
-                        <Input
-                            label="Judul"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            required
-                        />
-                        <Input
-                            label="Konten"
-                            name="content"
-                            value={formData.content}
-                            onChange={handleChange}
-                            required
-                        />
-                        <Input
-                            label="Tanggal"
-                            type="date"
-                            name="date"
-                            value={formData.date}
-                            onChange={handleChange}
-                            required
-                        />
-                        <div className="input-group">
-                            <label>Kategori</label>
-                            <select
-                                name="category"
-                                value={formData.category}
-                                onChange={handleChange}
-                            >
-                                <option value="">Pilih Kategori</option>
-                                {EDUCATION_CATEGORIES.map((cat) => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <Button type="submit" disabled={isLoading}>
-                            Simpan
-                        </Button>
-                    </Form>
-                </Modal>
+              </Form>
             </div>
-        </motion.div>
-    );
+          </Modal>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 export default EducationManagement;
