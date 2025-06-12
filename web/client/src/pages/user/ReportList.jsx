@@ -39,15 +39,13 @@ function ReportList({ isOfflineMode }) {
 
   const headers = ['Tipe', 'Nama Aplikasi', 'Kategori', 'Tanggal Kejadian', 'Status'];
 
-  const renderRow = (report) => (
-    <>
-      <td>{report.type === REPORT_TYPES.WEB ? 'Web' : 'App'}</td>
-      <td>{report.appName}</td>
-      <td>{report.category.join(', ')}</td>
-      <td>{new Date(report.incidentDate).toLocaleDateString()}</td>
-      <td>{report.status || 'Pending'}</td>
-    </>
-  );
+  const renderRow = (report) => [
+    <td key="type" className="py-4 px-6">{report.type === REPORT_TYPES.WEB ? 'Web' : 'App'}</td>,
+    <td key="appName" className="py-4 px-6">{report.appName}</td>,
+    <td key="category" className="py-4 px-6">{report.category.join(', ')}</td>,
+    <td key="incidentDate" className="py-4 px-6">{new Date(report.incidentDate).toLocaleDateString()}</td>,
+    <td key="status" className="py-4 px-6">{report.status || 'Pending'}</td>
+  ];
 
   return (
     <FullScreenSection>

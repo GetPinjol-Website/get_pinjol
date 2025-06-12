@@ -29,15 +29,15 @@ function ReportVerification({ isOfflineMode }) {
         confirmButtonColor: '#658147',
         background: '#E7F0DC',
       }),
-      showSuccess: (message) =>
-        window.Swal.fire({
-          icon: 'success',
-          title: 'Berhasil',
-          text: message,
-          confirmButtonColor: '#658147',
-          background: '#E7F0DC',
-        }),
-      setReports,
+    showSuccess: (message) =>
+      window.Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: message,
+        confirmButtonColor: '#658147',
+        background: '#E7F0DC',
+      }),
+    setReports,
   });
 
   useEffect(() => {
@@ -63,28 +63,27 @@ function ReportVerification({ isOfflineMode }) {
 
   const headers = ['Tipe', 'Nama Aplikasi', 'Kategori', 'Tanggal Kejadian', 'Status', 'Aksi'];
 
-  const renderRow = (report) => (
-    <>
-      <td>{report.type === REPORT_TYPES.WEB ? 'Web' : 'App'}</td>
-      <td>{report.appName}</td>
-      td<td>{report.category.join(', ')}</td>
-      <td>{new Date(report.incidentDate).toLocaleDateString()}</td>
-      <td>{report.status || 'Pending'}</td>
-      <td className="flex space-x-2">
-        <Button
-          onClick={() => handleVerify(report.id, 'Diterima', report.type)}
-          className="bg-green-500 text-white">
-          Terima
-        </Button>
-        <Button
-          onClick={() => handleVerify(report.id, 'Ditolak', report.type)}
-          className="bg-red-500 text-white"
-        >
-          Tolak
-        </Button>
-      </td>
-    </>
-  );
+  const renderRow = (report) => [
+    <td key="type" className="py-4 px-6">{report.type === REPORT_TYPES.WEB ? 'Web' : 'App'}</td>,
+    <td key="appName" className="py-4 px-6">{report.appName}</td>,
+    <td key="category" className="py-4 px-6">{report.category.join(', ')}</td>,
+    <td key="incidentDate" className="py-4 px-6">{new Date(report.incidentDate).toLocaleDateString()}</td>,
+    <td key="status" className="py-4 px-6">{report.status || 'Pending'}</td>,
+    <td key="actions" className="py-4 px-6 flex space-x-2">
+      <Button
+        onClick={() => handleVerify(report.id, 'Diterima', report.type)}
+        className="bg-green-500 text-white"
+      >
+        Terima
+      </Button>
+      <Button
+        onClick={() => handleVerify(report.id, 'Ditolak', report.type)}
+        className="bg-red-500 text-white"
+      >
+        Tolak
+      </Button>
+    </td>,
+  ];
 
   return (
     <motion.div {...pageTransition} className="flex">
@@ -105,7 +104,8 @@ function ReportVerification({ isOfflineMode }) {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="border border-pinjol-light-4 rounded-lg px-3 py-2">
+                  className="border border-pinjol-light-4 rounded-lg px-3 py-2"
+                >
                   <option value="">Semua</option>
                   <option value={REPORT_TYPES.WEB}>Web</option>
                   <option value={REPORT_TYPES.APP}>App</option>
