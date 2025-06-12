@@ -27,7 +27,7 @@ function Sidebar({ role, onLogout }) {
     >
       <div className="flex justify-between items-center p-4 border-b border-pinjol-dark-4">
         <span className="text-lg font-semibold">
-          {role === 'admin' ? 'Admin Panel' : 'User Panel'}
+          {role === 'admin' ? 'Menu' : 'User Panel'}
         </span>
       </div>
       <ul className="flex-grow p-4 space-y-2">

@@ -29,7 +29,7 @@ function AdminDashboard() {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
-        navigate('/');
+        navigate('/login');
     };
 
     const renderRow = (report) => (
