@@ -28,7 +28,7 @@ function AdminDashboard() {
     const renderRow = (report) => (
         <>
             <td>{report.appName}</td>
-            <td>{report.category.join(', ')}</td> {/* Perbaiki untuk array category */}
+            <td>{report.category.join(', ')}</td>
             <td>{new Date(report.incidentDate).toLocaleDateString()}</td>
             <td>{report.status || 'Belum Diverifikasi'}</td>
         </>
