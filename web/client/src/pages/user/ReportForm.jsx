@@ -23,7 +23,6 @@ function ReportForm() {
   const isEdit = !!id;
   const token = localStorage.getItem('token');
 
-  // Initialize form state with default values
   const initialFormData = {
     appName: '',
     description: '',
@@ -66,7 +65,6 @@ function ReportForm() {
     },
   });
 
-  // Validate token and fetch report data for edit mode
   useEffect(() => {
     if (!token) {
       setError('Anda belum login. Silakan login terlebih dahulu.');
@@ -83,7 +81,6 @@ function ReportForm() {
     const missingFields = [];
     if (!formData.appName.trim()) missingFields.push('Nama Aplikasi');
     if (!formData.description.trim()) missingFields.push('Deskripsi');
-    if (!Array.isArray(formData.category) || formData.category.length === 0) missingFields.push('Kategori');
     if (!formData.incidentDate || !isValidDate(formData.incidentDate)) missingFields.push('Tanggal Kejadian');
     if (formData.evidence && !isValidUrl(formData.evidence)) missingFields.push('Link Bukti tidak valid');
     if (!formData.userId || !token) {
@@ -127,7 +124,11 @@ function ReportForm() {
 
     try {
       setError('');
-      const { type, ...dataToSend } = formData;
+      const { type, category, ...dataToSend } = formData;
+      // Only include category if it's non-empty
+      if (category.length > 0) {
+        dataToSend.category = category;
+      }
       if (isEdit) {
         await presenter[formData.type === REPORT_TYPES.WEB ? 'updateWebReport' : 'updateAppReport'](
           id,
@@ -140,7 +141,6 @@ function ReportForm() {
           token
         );
       }
-      // Reset form only after successful submission
       setFormData(initialFormData);
     } catch (err) {
       console.error('Error submitting form:', err);
@@ -210,12 +210,11 @@ function ReportForm() {
               </motion.div>
               <motion.div variants={itemVariants}>
                 <DropdownChecklist
-                  label="Kategori"
+                  label="Kategori (opsional)"
                   name="category"
                   options={categoryOptions}
                   selected={formData.category}
                   onChange={handleCategoryChange}
-                  required
                 />
               </motion.div>
               <motion.div variants={itemVariants}>

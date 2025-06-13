@@ -9,20 +9,19 @@ class ReportPresenter {
   }
 
   validateReportData(reportData) {
-    if (!reportData.appName || !reportData.description || !Array.isArray(reportData.category) || !reportData.category.length || !reportData.incidentDate || !reportData.userId) {
-      throw new Error('Semua field wajib diisi kecuali bukti');
+    if (!reportData.appName || !reportData.description || !reportData.incidentDate || !reportData.userId) {
+      throw new Error('Semua field wajib diisi kecuali bukti dan kategori');
     }
     if (!isValidDate(reportData.incidentDate)) throw new Error('Tanggal kejadian tidak valid');
     if (reportData.evidence && !isValidUrl(reportData.evidence)) throw new Error('Link bukti tidak valid');
   }
 
-  async createWebReport(reportData) {
+  async createWebReport(reportData, token) {
     try {
       this.view.setLoading?.(true);
       const { type, ...dataToSend } = reportData;
       dataToSend.userId = UserModel.getUserId();
       this.validateReportData(dataToSend);
-      const token = UserModel.getToken();
       if (!token) throw new Error('Autentikasi diperlukan');
       console.log('Creating web report:', dataToSend);
       const response = await ReportModel.createWebReport(dataToSend, token);
@@ -43,13 +42,12 @@ class ReportPresenter {
     }
   }
 
-  async createAppReport(reportData) {
+  async createAppReport(reportData, token) {
     try {
       this.view.setLoading?.(true);
       const { type, ...dataToSend } = reportData;
       dataToSend.userId = UserModel.getUserId();
       this.validateReportData(dataToSend);
-      const token = UserModel.getToken();
       if (!token) throw new Error('Autentikasi diperlukan');
       console.log('Creating app report:', dataToSend);
       const response = await ReportModel.createAppReport(dataToSend, token);
@@ -70,13 +68,12 @@ class ReportPresenter {
     }
   }
 
-  async updateWebReport(id, reportData) {
+  async updateWebReport(id, reportData, token) {
     try {
       this.view.setLoading?.(true);
       const { type, id: reportId, ...dataToSend } = reportData;
       dataToSend.userId = UserModel.getUserId();
       if (!dataToSend.status) this.validateReportData(dataToSend);
-      const token = UserModel.getToken();
       if (!token) throw new Error('Autentikasi diperlukan');
       console.log('Updating web report ID:', id, 'Data:', dataToSend);
       const response = await ReportModel.updateWebReport(id, dataToSend, token);
@@ -99,13 +96,12 @@ class ReportPresenter {
     }
   }
 
-  async updateAppReport(id, reportData) {
+  async updateAppReport(id, reportData, token) {
     try {
       this.view.setLoading?.(true);
       const { type, id: reportId, ...dataToSend } = reportData;
       dataToSend.userId = UserModel.getUserId();
       if (!dataToSend.status) this.validateReportData(dataToSend);
-      const token = UserModel.getToken();
       if (!token) throw new Error('Autentikasi diperlukan');
       console.log('Updating app report ID:', id, 'Data:', dataToSend);
       const response = await ReportModel.updateAppReport(id, dataToSend, token);
