@@ -11,7 +11,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       strategies: 'injectManifest',
       srcDir: 'public',
-      filename: 'sw.js',
+      filename: 'sw.mjs', // Sesuaikan dengan output ES module
       includeAssets: ['favicon.ico', 'assets/icons/*.png'],
       manifest: {
         name: 'Aplikasi Laporan Pinjol',
@@ -28,26 +28,32 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico}'],
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === 'image',
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'image-cache',
-              cacheableResponse: { statuses: [0, 200] },
-              expiration: { maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 },
+              plugins: [
+                {
+                  cacheableResponse: { statuses: [0, 200] },
+                },
+                {
+                  expiration: {
+                    maxEntries: 50,
+                    maxAgeSeconds: 30 * 24 * 60 * 60, // 30 hari
+                  },
+                },
+              ],
             },
           },
         ],
-        // Tambahkan precaching untuk aset statis
-        precacheEntries: self.__WB_MANIFEST,
-        // Aktifkan skipWaiting dan clientsClaim
-        skipWaiting: true,
-        clientsClaim: true,
       },
       devOptions: {
         enabled: true,
-        type: 'module',
+        type: 'module', // Pastikan konsisten dengan filename
       },
     }),
   ],
