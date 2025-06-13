@@ -34,7 +34,6 @@ class ReportPresenter {
       if (error.isOffline) {
         this.view.showError?.('Anda sedang offline, tidak dapat membuat laporan');
       } else {
-        // Tampilkan pesan error spesifik dari backend jika ada
         const errorMessage = error.response?.data?.pesan || error.message || 'Gagal membuat laporan web';
         this.view.showError?.(errorMessage);
       }
@@ -70,7 +69,6 @@ class ReportPresenter {
     }
   }
 
-  // Fungsi lain tetap sama
   async updateWebReport(id, reportData) {
     try {
       this.view.setLoading?.(true);
@@ -235,7 +233,7 @@ class ReportPresenter {
       const role = UserModel.getRole() || 'user';
       console.log('Fetching user reports with filters:', filters);
       const reports = await ReportModel.getUserReports({ ...filters }, token, role);
-      this.view.setReports?.([...reports]);
+      this.view.setReports?.([...reports.data]); // Update untuk mengakses properti 'data'
       console.log('Received user reports:', reports);
       return reports;
     } catch (error) {

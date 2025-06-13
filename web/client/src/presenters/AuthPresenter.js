@@ -38,6 +38,7 @@ class AuthPresenter {
         this.view.navigate('/dashboard', { replace: true });
       }
     } catch (error) {
+      console.error('Login error:', error.message);
       this.view.showError(error.message || 'Login gagal');
     } finally {
       this.view.setLoading(false);
@@ -53,7 +54,7 @@ class AuthPresenter {
       this.view.setRole(null);
       this.view.navigate('/login', { replace: true });
     } catch (error) {
-      this.view.showError(error || 'Gagal logout');
+      this.view.showError(error.message || 'Gagal logout');
     }
   }
 
@@ -67,7 +68,12 @@ class AuthPresenter {
         throw new Error('Tidak ada token atau role di localStorage');
       }
 
-      // Tidak memanggil checkRole, gunakan role dari localStorage
+      // Verifikasi token ke server
+      const serverRole = await UserModel.checkRole();
+      if (serverRole !== role) {
+        throw new Error('Role di localStorage tidak sesuai dengan server');
+      }
+
       this.view.setToken(true);
       this.view.setRole(role);
     } catch (error) {
@@ -78,6 +84,7 @@ class AuthPresenter {
         this.view.setToken(false);
         this.view.setRole(null);
       }
+      throw error; // Lempar error untuk ditangani oleh caller
     } finally {
       this.view.setLoading(false);
     }

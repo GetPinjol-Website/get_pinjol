@@ -68,11 +68,15 @@ class UserModel {
   }
 
   static getToken() {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    console.log('Retrieved token:', token); // Debugging
+    return token;
   }
 
   static getRole() {
-    return localStorage.getItem('role');
+    const role = localStorage.getItem('role');
+    console.log('Retrieved role:', role); // Debugging
+    return role;
   }
 
   static logout() {

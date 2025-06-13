@@ -37,7 +37,7 @@ function Dashboard() {
         background: '#E7F0DC',
       });
     },
-    setReports: (data) => setReports([...data]),
+    setReports: (data) => setReports([...(data.data || data)]), // Menangani struktur data.data dari server
     navigate,
     refreshReports: () => {
       presenter.getUserReports({ type: filterType === '' ? undefined : filterType, _t: Date.now() });
