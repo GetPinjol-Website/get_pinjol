@@ -31,6 +31,20 @@ class AdminPresenter {
     }
   }
 
+  async getAllUsers() {
+    try {
+      this.view.setLoading?.(true);
+      const response = await UserModel.getAllUsers();
+      this.view.setUsers?.(response);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getAllUsers:', error);
+      this.view.showError?.(error.message || 'Gagal mengambil data pengguna');
+    } finally {
+      this.view.setLoading?.(false);
+    }
+  }
+
   async verifyReport(id, { status, level }, type) {
     try {
       this.view.setLoading?.(true);

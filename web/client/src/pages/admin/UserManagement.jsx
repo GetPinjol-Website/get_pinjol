@@ -35,17 +35,23 @@ function UserManagement() {
     );
 
     return (
-        <motion.div {...pageTransition} className="flex">
+        <div className="flex bg-pinjol-light-1">
             <Sidebar role="admin" />
-            <div className="content-with-sidebar">
-                <h1>Manajemen Pengguna</h1>
-                <ErrorMessage message={error} onClose={() => setError('')} />
-                {isLoading && <Spinner />}
-                <Card title="Daftar Pengguna">
-                    <Table headers={headers} data={users} renderRow={renderRow} />
-                </Card>
+            <div className="bg-pinjol-light-1 w-full py-18 sm:py-8">
+                <motion.div {...pageTransition} className="container mx-auto px-4 pt-20" initial="hidden" animate="visible">
+                    <motion.h1 className="text-3xl font-bold text-pinjol-dark-3 mb-6 flex items-center" variants={pageTransition}>
+                        <i className="fas fa-users mr-3"></i> Manajemen Pengguna
+                    </motion.h1>
+                    <ErrorMessage message={error} onClose={() => setError('')} />
+                    {isLoading && <Spinner />}
+                    <Card title="Daftar Pengguna">
+                        <div className="overflow-x-auto">
+                            <Table headers={headers} data={users} renderRow={renderRow} />
+                        </div>
+                    </Card>
+                </motion.div>
             </div>
-        </motion.div>
+        </div>
     );
 }
 

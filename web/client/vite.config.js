@@ -9,9 +9,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
       srcDir: 'public',
       filename: 'sw.js',
-      strategies: 'injectManifest',
       includeAssets: ['favicon.ico', 'assets/icons/*.png'],
       manifest: {
         name: 'Aplikasi Laporan Pinjol',
@@ -27,7 +27,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico}'], // Cache hanya aset statis
+        globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico}'],
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === 'image',
@@ -38,8 +38,12 @@ export default defineConfig({
               expiration: { maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 },
             },
           },
-          // Tidak ada caching untuk API, semua ke endpoint langsung
         ],
+        // Tambahkan precaching untuk aset statis
+        precacheEntries: self.__WB_MANIFEST,
+        // Aktifkan skipWaiting dan clientsClaim
+        skipWaiting: true,
+        clientsClaim: true,
       },
       devOptions: {
         enabled: true,
@@ -50,7 +54,11 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': { target: 'http://localhost:9000', changeOrigin: true, rewrite: (path) => path.replace(/^\/api/, '') },
+      '/api': {
+        target: 'http://localhost:9000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
     },
     hmr: { overlay: false },
   },

@@ -29,7 +29,8 @@ class UserModel {
 
   static async getAllUsers(filters = {}) {
     try {
-      const response = await getAllUsers(filters);
+      const token = this.getToken();
+      const response = await getAllUsers({ ...filters, token });
       if (response.status !== 'sukses') throw new Error(response.message);
       return response.data;
     } catch (error) {
@@ -86,6 +87,25 @@ class UserModel {
     } catch (error) {
       console.error('Error logout di UserModel:', error.message);
       throw new Error('Gagal logout');
+    }
+  }
+
+  static getUserId() {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token tidak ditemukan di localStorage');
+        return '';
+      }
+      // Dekode payload JWT (bagian tengah dari token: header.payload.signature)
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64));
+      console.log('Decoded JWT payload:', payload); // Debugging
+      return payload.id || '';
+    } catch (error) {
+      console.error('Error decoding token in getUserId:', error.message);
+      return '';
     }
   }
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Landing from './pages/Landing';
@@ -13,7 +13,6 @@ import ApplicationCheck from './pages/user/ApplicationCheck';
 import PinjolList from './pages/user/PinjolList';
 import Education from './pages/user/Education';
 import EducationDetail from './pages/user/EducationDetail';
-import AdminDashboard from './pages/admin/AdminDashboard';
 import PinjolManagement from './pages/admin/PinjolManagement';
 import UserManagement from './pages/admin/UserManagement';
 import EducationManagement from './pages/admin/EducationManagement';
@@ -45,12 +44,12 @@ function App() {
     authPresenter.checkAuthStatus(controller.signal).then(() => {
       if (isAuthenticated && role) {
         if (role === 'admin' && !location.pathname.startsWith('/admin')) {
-          navigate('/admin', { replace: true });
+          navigate('/admin/users', { replace: true });
         } else if (role === 'user' && !location.pathname.startsWith('/dashboard') && !location.pathname.match(/^\/(education|pinjol|applications)/)) {
           navigate('/dashboard', { replace: true });
         }
       } else {
-        if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard')) {
+        if (location.pathname.startsWith('/admin/users') || location.pathname.startsWith('/dashboard')) {
           navigate('/', { replace: true });
         }
       }
@@ -62,7 +61,7 @@ function App() {
         setRole(null);
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard')) {
+        if (location.pathname.startsWith('/admin/users') || location.pathname.startsWith('/dashboard')) {
           navigate('/', { replace: true });
         }
         setIsLoading(false);
@@ -105,7 +104,7 @@ function App() {
           )}
           {isAuthenticated && role === 'admin' && (
             <>
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
               <Route path="/admin/pinjol" element={<PinjolManagement />} />
               <Route path="/admin/users" element={<UserManagement />} />
               <Route path="/admin/education" element={<EducationManagement />} />
