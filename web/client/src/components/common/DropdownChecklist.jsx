@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function DropdownChecklist({ options, selected, onChange, label, name }) {
+function DropdownChecklist({ options, selected = [], onChange, label, name }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = () => setIsOpen(!isOpen);
 
   const handleCheckboxChange = (value) => {
-    const updatedSelection = selected.includes(value)
+    const updatedSelection = Array.isArray(selected) && selected.includes(value)
       ? selected.filter((item) => item !== value)
-      : [...selected, value];
-    onChange({ target: { name, value: updatedSelection } });
+      : [...(Array.isArray(selected) ? selected : []), value];
+    onChange(updatedSelection);
   };
 
   return (
@@ -26,9 +26,10 @@ function DropdownChecklist({ options, selected, onChange, label, name }) {
           className="px-5 py-2.5 rounded-sm text-white text-sm font-medium cursor-pointer border-0 outline-0 bg-pinjol-dark-1 hover:bg-pinjol-dark-2 active:bg-pinjol-dark-1 flex items-center justify-between w-full"
         >
           <span className="truncate">
-            {selected.length > 0
+            {Array.isArray(selected) && selected.length > 0
               ? selected
                   .map((val) => options.find((opt) => opt.value === val)?.label)
+                  .filter(Boolean)
                   .join(', ')
               : 'Pilih kategori'}
           </span>
@@ -64,7 +65,7 @@ function DropdownChecklist({ options, selected, onChange, label, name }) {
                       id={`checkbox-${option.value}`}
                       type="checkbox"
                       className="hidden peer"
-                      checked={selected.includes(option.value)}
+                      checked={Array.isArray(selected) && selected.includes(option.value)}
                       onChange={() => handleCheckboxChange(option.value)}
                     />
                     <label

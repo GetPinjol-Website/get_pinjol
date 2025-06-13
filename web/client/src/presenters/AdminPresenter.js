@@ -1,76 +1,69 @@
-import UserModel from '../models/UserModel';
 import ReportModel from '../models/ReportModel';
-import PinjolModel from '../models/PinjolModel';
-import EducationModel from '../models/EducationModel';
+import UserModel from '../models/UserModel';
+import { REPORT_TYPES } from '../utils/constants';
 
-// Presenter untuk mengelola logika admin
 class AdminPresenter {
   constructor(view) {
     this.view = view;
   }
 
-  // Mendapatkan daftar semua pengguna
-  async getAllUsers(filters = {}) {
-    try {
-      this.view.setLoading(true);
-      const users = await UserModel.getAllUsers(filters);
-      this.view.setUsers(users);
-    } catch (error) {
-      this.view.showError(error.message || 'Gagal mengambil daftar pengguna');
-    } finally {
-      this.view.setLoading(false);
-    }
-  }
-
-  // Mendapatkan semua laporan untuk verifikasi
   async getAllReports(filters = {}) {
     try {
-      this.view.setLoading(true);
-      const reports = await ReportModel.getAllReports(filters);
-      this.view.setReports(reports);
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      const role = UserModel.getRole() || 'admin';
+      console.log('Fetching all reports with filters:', filters);
+      const response = await ReportModel.getAllReports(filters, token, role);
+      this.view.setReports?.(response.data);
+      console.log('Received reports:', response.data);
+      return response.data;
     } catch (error) {
-      this.view.showError(error.message || 'Gagal mengambil daftar laporan');
+      console.error('Error in getAllReports:', error);
+      if (error.isOffline) {
+        this.view.setReports?.([]);
+        this.view.showError?.('Anda sedang offline, tidak dapat memuat laporan');
+      } else {
+        this.view.showError?.(error.message || 'Gagal mengambil daftar laporan');
+      }
+      throw error;
     } finally {
-      this.view.setLoading(false);
+      this.view.setLoading?.(false);
     }
   }
 
-  // Mendapatkan semua pinjaman online
-  async getAllPinjol() {
+  async verifyReport(id, { status, level }, type) {
     try {
-      this.view.setLoading(true);
-      const pinjols = await PinjolModel.getAllPinjol();
-      this.view.setPinjols(pinjols);
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole();
+      if (role !== 'admin') throw new Error('Hanya admin yang dapat memverifikasi laporan');
+      if (!type || ![REPORT_TYPES.WEB, REPORT_TYPES.APP].includes(type)) {
+        throw new Error('Tipe laporan tidak valid');
+      }
+      if (!['low', 'medium', 'high'].includes(level)) {
+        throw new Error('Level harus low, medium, atau high');
+      }
+      const reportData = { status, level };
+      console.log('Verifying report ID:', id, 'Status:', status, 'Type:', type, 'Level:', level);
+      const response = await (type === REPORT_TYPES.WEB
+        ? ReportModel.updateWebReport(id, reportData, token, role)
+        : ReportModel.updateAppReport(id, reportData, token, role));
+      this.view.showSuccess?.(`Laporan ${status === 'accepted' ? 'diterima' : 'ditolak'} berhasil`);
+      this.view.refreshReports?.();
+      return response;
     } catch (error) {
-      this.view.showError(error.message || 'Gagal mengambil daftar pinjaman');
+      console.error('Error in verifyReport:', error);
+      if (error.isOffline) {
+        this.view.showError?.('Anda sedang offline, tidak dapat memverifikasi laporan');
+      } else if (error.status === 404) {
+        this.view.showError?.('Laporan tidak ditemukan');
+      } else {
+        this.view.showError?.(error.message || 'Terjadi kesalahan pada server');
+      }
+      throw error;
     } finally {
-      this.view.setLoading(false);
-    }
-  }
-
-  // Mendapatkan semua konten edukasi
-  async getAllEducation(filters = {}) {
-    try {
-      this.view.setLoading(true);
-      const educations = await EducationModel.getAllEducation(filters);
-      this.view.setEducations(educations);
-    } catch (error) {
-      this.view.showError(error.message || 'Gagal mengambil daftar edukasi');
-    } finally {
-      this.view.setLoading(false);
-    }
-  }
-
-  // Verifikasi laporan (placeholder, karena endpoint verifikasi tidak ada)
-  async verifyReport(id, status) {
-    try {
-      this.view.setLoading(true);
-      // Asumsi endpoint verifikasi akan ditambahkan
-      this.view.showSuccess(`Laporan ${status} berhasil`);
-    } catch (error) {
-      this.view.showError(error.message || 'Gagal memverifikasi laporan');
-    } finally {
-      this.view.setLoading(false);
+      this.view.setLoading?.(false);
     }
   }
 }

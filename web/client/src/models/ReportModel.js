@@ -1,216 +1,265 @@
-import {
-  createWebReport,
-  createAppReport,
-  updateWebReport,
-  updateAppReport,
-  deleteWebReport,
-  deleteAppReport,
-  getReportById,
-  getAllReports,
-  getUserReports,
-} from '../services/api/reportApi';
-import {
-  saveReport,
-  getReport,
-  getAllReportsDB,
-  deleteReport,
-  syncOfflineReports,
-} from '../services/indexedDB/reportDB';
+import ReportModel from '../models/ReportModel';
+import UserModel from '../models/UserModel';
 import { REPORT_TYPES } from '../utils/constants';
+import { isValidDate, isValidUrl } from '../utils/helpers';
 
-class ReportModel {
-  static async createWebReport(reportData, token) {
+class ReportPresenter {
+  constructor(view) {
+    this.view = view;
+  }
+
+  validateReportData(reportData) {
+    if (!reportData.appName || !reportData.description || !Array.isArray(reportData.category) || !reportData.category.length || !reportData.incidentDate) {
+      throw new Error('Semua field wajib diisi kecuali bukti');
+    }
+    if (!isValidDate(reportData.incidentDate)) throw new Error('Tanggal kejadian tidak valid');
+    if (reportData.evidence && !isValidUrl(reportData.evidence)) throw new Error('Link bukti tidak valid');
+    if (!['low', 'medium', 'high'].includes(reportData.level)) throw new Error('Tingkat laporan harus rendah, sedang, atau tinggi');
+  }
+
+  async createWebReport(reportData) {
     try {
-      const response = await createWebReport(reportData, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      await saveReport(response.data, REPORT_TYPES.WEB);
-      return response.data;
+      this.view.setLoading?.(true);
+      this.validateReportData(reportData);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole() || 'user';
+      console.log('Creating web report:', reportData);
+      const response = await ReportModel.createWebReport(reportData, token, role);
+      this.view.showSuccess?.('Laporan web berhasil dibuat');
+      this.view.navigate?.('/dashboard');
+      return response;
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        const offlineReport = {
-          ...reportData,
-          id: `offline-${Date.now()}`,
-          type: REPORT_TYPES.WEB,
-          status: 'pending',
-          updatedAt: new Date().toISOString(),
-        };
-        await saveReport(offlineReport, REPORT_TYPES.WEB);
-        return offlineReport;
-      }
-      throw new Error(error.message || 'Gagal membuat laporan web');
+      console.error('Error in createWebReport:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal membuat laporan web';
+      const errorDetails = error.response?.data?.missingFields || error.response?.data?.details || '';
+      this.view.showError?.(`${errorMessage}${errorDetails ? `: ${JSON.stringify(errorDetails)}` : ''}`);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async createAppReport(reportData, token) {
+  async createAppReport(reportData) {
     try {
-      const response = await createAppReport(reportData, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      await saveReport(response.data, REPORT_TYPES.APP);
-      return response.data;
+      this.view.setLoading?.(true);
+      this.validateReportData(reportData);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole() || 'user';
+      console.log('Creating app report:', reportData);
+      const response = await ReportModel.createAppReport(reportData, token, role);
+      this.view.showSuccess?.('Laporan aplikasi berhasil dibuat');
+      this.view.navigate?.('/dashboard');
+      return response;
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        const offlineReport = {
-          ...reportData,
-          id: `offline-${Date.now()}`,
-          type: REPORT_TYPES.APP,
-          status: 'pending',
-          updatedAt: new Date().toISOString(),
-        };
-        await saveReport(offlineReport, REPORT_TYPES.APP);
-        return offlineReport;
-      }
-      throw new Error(error.message || 'Gagal membuat laporan aplikasi');
+      console.error('Error in createAppReport:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal membuat laporan aplikasi';
+      const errorDetails = error.response?.data?.missingFields || error.response?.data?.details || '';
+      this.view.showError?.(`${errorMessage}${errorDetails ? `: ${JSON.stringify(errorDetails)}` : ''}`);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async updateWebReport(id, reportData, token) {
+  async updateWebReport(id, reportData) {
     try {
-      const response = await updateWebReport(id, reportData, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      await saveReport(response.data, REPORT_TYPES.WEB);
-      return response.data;
+      this.view.setLoading?.(true);
+      if (!reportData.status) this.validateReportData(reportData);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole() || 'user';
+      if (role === 'admin' && !reportData.status) throw new Error('Admin tidak dapat mengedit laporan');
+      console.log('Updating web report ID:', id, 'Data:', reportData);
+      const response = await ReportModel.updateWebReport(id, reportData, token, role);
+      this.view.showSuccess?.('Laporan web berhasil diperbarui');
+      this.view.navigate?.('/dashboard');
+      return response;
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        const offlineReport = {
-          ...reportData,
-          id,
-          type: REPORT_TYPES.WEB,
-          updatedAt: new Date().toISOString(),
-        };
-        await saveReport(offlineReport, REPORT_TYPES.WEB);
-        return offlineReport;
-      }
-      throw new Error(error.message || 'Gagal memperbarui laporan web');
+      console.error('Error in updateWebReport:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal memperbarui laporan web';
+      const errorDetails = error.response?.data?.missingFields || error.response?.data?.details || '';
+      this.view.showError?.(`${errorMessage}${errorDetails ? `: ${JSON.stringify(errorDetails)}` : ''}`);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async updateAppReport(id, reportData, token) {
+  async updateAppReport(id, reportData) {
     try {
-      const response = await updateAppReport(id, reportData, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      await saveReport(response.data, REPORT_TYPES.APP);
-      return response.data;
+      this.view.setLoading?.(true);
+      if (!reportData.status) this.validateReportData(reportData);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole() || 'user';
+      if (role === 'admin' && !reportData.status) throw new Error('Admin tidak dapat mengedit laporan');
+      console.log('Updating app report ID:', id, 'Data:', reportData);
+      const response = await ReportModel.updateAppReport(id, reportData, token, role);
+      this.view.showSuccess?.('Laporan aplikasi berhasil diperbarui');
+      this.view.navigate?.('/dashboard');
+      return response;
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        const offlineReport = {
-          ...reportData,
-          id,
-          type: REPORT_TYPES.APP,
-          updatedAt: new Date().toISOString(),
-        };
-        await saveReport(offlineReport, REPORT_TYPES.APP);
-        return offlineReport;
-      }
-      throw new Error(error.message || 'Gagal memperbarui laporan aplikasi');
+      console.error('Error in updateAppReport:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal memperbarui laporan aplikasi';
+      const errorDetails = error.response?.data?.missingFields || error.response?.data?.details || '';
+      this.view.showError?.(`${errorMessage}${errorDetails ? `: ${JSON.stringify(errorDetails)}` : ''}`);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async deleteWebReport(id, token) {
+  async deleteWebReport(id) {
     try {
-      const response = await deleteWebReport(id, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      await deleteReport(id, REPORT_TYPES.WEB);
-      return true;
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole() || 'user';
+      if (role === 'admin') throw new Error('Admin tidak dapat menghapus laporan');
+      console.log('Deleting web report ID:', id);
+      await ReportModel.deleteWebReport(id, token);
+      this.view.showSuccess?.('Laporan web berhasil dihapus');
+      this.view.refreshReports?.();
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        await deleteReport(id, REPORT_TYPES.WEB);
-        return true;
-      }
-      throw new Error(error.message || 'Gagal menghapus laporan web');
+      console.error('Error in deleteWebReport:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal menghapus laporan web';
+      this.view.showError?.(errorMessage);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async deleteAppReport(id, token) {
+  async deleteAppReport(id) {
     try {
-      const response = await deleteAppReport(id, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      await deleteReport(id, REPORT_TYPES.APP);
-      return true;
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole() || 'user';
+      if (role === 'admin') throw new Error('Admin tidak dapat menghapus laporan');
+      console.log('Deleting app report ID:', id);
+      await ReportModel.deleteAppReport(id, token);
+      this.view.showSuccess?.('Laporan aplikasi berhasil dihapus');
+      this.view.refreshReports?.();
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        await deleteReport(id, REPORT_TYPES.APP);
-        return true;
-      }
-      throw new Error(error.message || 'Gagal menghapus laporan aplikasi');
+      console.error('Error in deleteAppReport:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal menghapus laporan aplikasi';
+      this.view.showError?.(errorMessage);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async getReportById(id, token, type = REPORT_TYPES.WEB) {
+  async getReportById(id, type = REPORT_TYPES.WEB, params = {}) {
     try {
-      const response = await getReportById(id, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      return response.data;
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      console.log('Fetching report ID:', id, 'Type:', type, 'Params:', params);
+      const report = await ReportModel.getReportById(id, token, type, params);
+      if (report.deleted) throw new Error('Laporan telah dihapus');
+      this.view.setReport?.({ ...report });
+      return report;
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        const report = await getReport(id, type);
-        if (report) return report;
-      }
-      throw new Error(error.message || 'Gagal mengambil laporan');
+      console.error('Error in getReportById:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal mengambil laporan';
+      this.view.showError?.(errorMessage);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async getAllReports(filters = {}, token = null) {
+  async getAllReports(filters = {}) {
     try {
-      const response = await getAllReports(filters, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      return response.data;
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      const role = UserModel.getRole() || 'guest';
+      console.log('Fetching all reports with filters:', filters);
+      const reports = await ReportModel.getAllReports({ ...filters }, token, role);
+      this.view.setReports?.(reports);
+      console.log('Received reports:', reports);
+      return reports;
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        const type = filters.type || REPORT_TYPES.WEB;
-        const reports = await getAllReportsDB(type);
-        return reports.filter((report) =>
-          (!filters.appName || report.appName.toLowerCase().includes(filters.appName.toLowerCase())) &&
-          (!filters.category || report.category.includes(filters.category))
-        );
-      }
-      throw new Error(error.message || 'Gagal mengambil daftar laporan');
+      console.error('Error in getAllReports:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal mengambil daftar laporan';
+      this.view.showError?.(errorMessage);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async getUserReports(filters = {}, token) {
+  async getUserReports(filters = {}) {
     try {
-      const response = await getUserReports(filters, token);
-      if (response.status !== 'sukses') {
-        throw new Error(response.message);
-      }
-      return response.data;
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole() || 'user';
+      console.log('Fetching user reports with filters:', filters);
+      const reports = await ReportModel.getUserReports({ ...filters }, token, role);
+      this.view.setReports?.([...reports]);
+      console.log('Received user reports:', reports);
+      return reports;
     } catch (error) {
-      if (error.message.includes('Koneksi jaringan gagal')) {
-        const type = filters.type || REPORT_TYPES.WEB;
-        const reports = await getAllReportsDB(type);
-        return reports.filter((report) =>
-          (!filters.appName || report.appName.toLowerCase().includes(filters.appName.toLowerCase())) &&
-          (!filters.category || report.category.includes(filters.category))
-        );
-      }
-      throw new Error(error.message || 'Gagal mengambil daftar laporan pengguna');
+      console.error('Error in getUserReports:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal mengambil daftar laporan pengguna';
+      this.view.showError?.(errorMessage);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 
-  static async syncOfflineReports(token) {
+  async getAllApplications(filters = {}) {
     try {
-      await syncOfflineReports(token);
-      return true;
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      const role = UserModel.getRole() || 'guest';
+      console.log('Fetching all applications with filters:', filters);
+      const applications = await ReportModel.getAllApplications({ ...filters }, token, role);
+      this.view.setApplications?.(applications);
+      console.log('Received applications:', applications);
+      return applications;
     } catch (error) {
-      throw new Error(error.message || 'Gagal menyinkronkan laporan offline');
+      console.error('Error in getAllApplications:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Gagal mengambil daftar aplikasi';
+      this.view.showError?.(errorMessage);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
+    }
+  }
+
+  async verifyReport(id, { status }, type) {
+    try {
+      this.view.setLoading?.(true);
+      const token = UserModel.getToken();
+      if (!token) throw new Error('Autentikasi diperlukan');
+      const role = UserModel.getRole();
+      if (role !== 'admin') throw new Error('Hanya admin yang dapat memverifikasi laporan');
+      if (!type || ![REPORT_TYPES.WEB, REPORT_TYPES.APP].includes(type)) {
+        throw new Error('Tipe laporan tidak valid');
+      }
+      const reportData = { status };
+      console.log('Verifying report ID:', id, 'Status:', status, 'Type:', type);
+      const response = await (type === REPORT_TYPES.WEB
+        ? ReportModel.updateWebReport(id, reportData, token, role)
+        : ReportModel.updateAppReport(id, reportData, token, role));
+      this.view.showSuccess?.(`Laporan ${status === 'accepted' ? 'diterima' : 'ditolak'} berhasil`);
+      this.view.refreshReports?.();
+      return response;
+    } catch (error) {
+      console.error('Error in verifyReport:', error);
+      const errorMessage = error.response?.data?.pesan || error.message || 'Terjadi kesalahan pada server';
+      this.view.showError?.(errorMessage);
+      throw error;
+    } finally {
+      this.view.setLoading?.(false);
     }
   }
 }
 
-export default ReportModel;
+export default ReportPresenter;

@@ -1,20 +1,22 @@
 import axios from 'axios';
 import { BASE_URL } from '../../utils/constants';
-import { saveReport, deleteReport } from '../indexedDB/reportDB';
 
 const handleApiError = (error) => {
+  const isOffline = !navigator.onLine || error.message.includes('Network Error');
   if (error.response) {
     const { status, data } = error.response;
     return {
       status: data.status || 'error',
       message: data.message || 'Terjadi kesalahan pada server',
       code: status,
+      isOffline,
     };
   }
   return {
     status: 'error',
-    message: error.message || 'Koneksi jaringan gagal',
+    message: isOffline ? 'Anda sedang offline, jadi tidak bisa melihat data' : error.message || 'Kesalahan tidak diketahui',
     code: 0,
+    isOffline,
   };
 };
 
@@ -23,7 +25,6 @@ export const createWebReport = async (reportData, token) => {
     const response = await axios.post(`${BASE_URL}/report/web`, reportData, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    await saveReport(response.data.data, 'web');
     return {
       status: response.data.status,
       message: response.data.message,
@@ -40,7 +41,6 @@ export const createAppReport = async (reportData, token) => {
     const response = await axios.post(`${BASE_URL}/report/app`, reportData, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    await saveReport(response.data.data, 'app');
     return {
       status: response.data.status,
       message: response.data.message,
@@ -57,7 +57,6 @@ export const updateWebReport = async (id, reportData, token) => {
     const response = await axios.put(`${BASE_URL}/report/web/${id}`, reportData, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    await saveReport(response.data.data, 'web');
     return {
       status: response.data.status,
       message: response.data.message,
@@ -71,10 +70,9 @@ export const updateWebReport = async (id, reportData, token) => {
 
 export const updateAppReport = async (id, reportData, token) => {
   try {
-    const response = await axios.put(`${BASE_URL}/report/${id}`, reportData, {
+    const response = await axios.put(`${BASE_URL}/report/app/${id}`, reportData, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    await saveReport(response.data.data, 'app');
     return {
       status: response.data.status,
       message: response.data.message,
@@ -91,7 +89,6 @@ export const deleteWebReport = async (id, token) => {
     const response = await axios.delete(`${BASE_URL}/report/web/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    await deleteReport(id, 'web');
     return {
       status: response.data.status,
       message: response.data.message,
@@ -107,7 +104,6 @@ export const deleteAppReport = async (id, token) => {
     const response = await axios.delete(`${BASE_URL}/report/app/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    await deleteReport(id, 'app');
     return {
       status: response.data.status,
       message: response.data.message,
@@ -127,11 +123,6 @@ export const getReportById = async (id, token) => {
       status: response.data.status,
       data: response.data.data,
       code: response.status,
-      headers: {
-        cacheControl: response.headers['cache-control'],
-        etag: response.headers['etag'],
-        lastModified: response.headers['last-modified'],
-      },
     };
   } catch (error) {
     throw handleApiError(error);
@@ -145,12 +136,25 @@ export const getAllReports = async (filters = {}, token = null) => {
     return {
       status: response.data.status,
       data: response.data.data,
+      recommendation: response.data.recommendation,
+      recommendationStatus: response.data.recommendationStatus,
       code: response.status,
-      headers: {
-        cacheControl: response.headers['cache-control'],
-        etag: response.headers['etag'],
-        lastModified: response.headers['last-modified'],
-      },
+    };
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+export const getAllReportsAdmin = async (filters = {}, token) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/reports/admin`, {
+      params: filters,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return {
+      status: response.data.status,
+      data: response.data.data,
+      code: response.status,
     };
   } catch (error) {
     throw handleApiError(error);
@@ -167,11 +171,6 @@ export const getUserReports = async (filters = {}, token) => {
       status: response.data.status,
       data: response.data.data,
       code: response.status,
-      headers: {
-        cacheControl: response.headers['cache-control'],
-        etag: response.headers['etag'],
-        lastModified: response.headers['last-modified'],
-      },
     };
   } catch (error) {
     throw handleApiError(error);

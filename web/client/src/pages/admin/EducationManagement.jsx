@@ -31,6 +31,11 @@ function EducationManagement() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    console.log('Educations state updated:', educations);
+  }, [educations]);
 
   const presenter = new EducationPresenter({
     setLoading: setIsLoading,
@@ -41,20 +46,31 @@ function EducationManagement() {
   });
 
   useEffect(() => {
-    presenter.getAllEducation();
-  }, []);
+    if (token) {
+      presenter.getAllEducation({}, token);
+    } else {
+      setError('Anda belum login. Silakan login terlebih dahulu.');
+      navigate('/login');
+    }
+  }, [token]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!formData.title || !formData.content || !formData.date) {
       setError('Judul, konten, dan tanggal wajib diisi');
       return;
     }
     if (!isValidDate(formData.date)) {
       setError('Tanggal tidak valid');
+      return;
+    }
+    if (!token) {
+      setError('Sesi telah berakhir. Silakan login kembali.');
+      navigate('/login');
       return;
     }
     try {
@@ -64,14 +80,14 @@ function EducationManagement() {
           content: formData.content,
           date: formData.date,
           category: formData.category,
-        });
+        }, token);
       } else {
         await presenter.createEducation({
           title: formData.title,
           content: formData.content,
           date: formData.date,
           category: formData.category,
-        });
+        }, token);
       }
       setFormData({ id: null, title: '', content: '', date: '', category: '' });
       setIsModalOpen(false);
@@ -86,7 +102,7 @@ function EducationManagement() {
       id: edu.id,
       title: edu.title,
       content: edu.content,
-      date: edu.date.split('T')[0], // Format untuk input date
+      date: edu.date.split('T')[0],
       category: edu.category || '',
     });
     setIsEditMode(true);
@@ -94,11 +110,20 @@ function EducationManagement() {
   };
 
   const handleDelete = async (id) => {
+    if (!token) {
+      setError('Sesi telah berakhir. Silakan login kembali.');
+      navigate('/login');
+      return;
+    }
     if (window.confirm('Apakah Anda yakin ingin menghapus konten ini?')) {
       try {
-        await presenter.deleteEducation(id);
-        presenter.getAllEducation();
+        console.log('Initiating delete for ID:', id);
+        await presenter.deleteEducation(id, token);
+        console.log('Delete operation completed');
+        // Solusi sementara: Hapus item dari state jika backend gagal
+        setEducations((prev) => prev.filter((edu) => edu.id !== id));
       } catch (err) {
+        console.error('Error in handleDelete:', err);
         setError(err.message || 'Gagal menghapus konten');
       }
     }

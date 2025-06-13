@@ -1,112 +1,72 @@
 import axios from 'axios';
 import { BASE_URL } from '../../utils/constants';
-import { saveEducation } from '../indexedDB/educationDB';
 
-// Helper function untuk menangani error respons API
-const handleApiError = (error) => {
-  if (error.response) {
-    const { status, data } = error.response;
+const handleApiError = (err) => {
+  const offline = !navigator.onLine || err.message.includes('Network Error');
+  if (err.response) {
     return {
-      status: data.status || 'error',
-      message: data.pesan || 'Terjadi kesalahan pada server',
-      code: status,
+      status: err.response.data.status || 'error',
+      message: err.response.data.pesan || 'Server error',
+      code: err.response.status,
+      isOffline: offline,
     };
   }
   return {
     status: 'error',
-    message: error.message || 'Koneksi jaringan gagal',
+    message: offline ? 'Anda sedang offline, jadi tidak bisa melihat data' : err.message,
     code: 0,
+    isOffline: offline,
   };
 };
 
-// Membuat konten edukasi baru
-export const createEducation = async (educationData) => {
+const withAuth = (token) => ({
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+export const createEducation = async (data, token) => {
   try {
-    const response = await axios.post(`${BASE_URL}/education`, educationData);
-    // Simpan ke IndexedDB untuk caching offline
-    await saveEducation(response.data.data);
-    return {
-      status: response.data.status,
-      message: response.data.pesan,
-      data: response.data.data,
-      code: response.status,
-    };
-  } catch (error) {
-    throw handleApiError(error);
+    const res = await axios.post(`${BASE_URL}/education`, data, withAuth(token));
+    return { status: res.data.status, message: res.data.pesan, data: res.data.data };
+  } catch (e) {
+    throw handleApiError(e);
   }
 };
 
-// Mendapatkan semua konten edukasi dengan filter opsional
-export const getAllEducation = async (filters = {}) => {
+export const getAllEducation = async (filters = {}, token) => {
   try {
-    const response = await axios.get(`${BASE_URL}/education`, { params: filters });
-    return {
-      status: response.data.status,
-      data: response.data.data,
-      code: response.status,
-      headers: {
-        cacheControl: response.headers['cache-control'],
-        etag: response.headers['etag'],
-        lastModified: response.headers['last-modified'],
-      },
-    };
-  } catch (error) {
-    throw handleApiError(error);
+    const res = await axios.get(`${BASE_URL}/education`, {
+      params: filters,
+      ...withAuth(token),
+    });
+    return { status: res.data.status, data: res.data.data };
+  } catch (e) {
+    throw handleApiError(e);
   }
 };
 
-// Mendapatkan konten edukasi berdasarkan ID
-export const getEducationById = async (id) => {
+export const getEducationById = async (id, token) => {
   try {
-    const response = await axios.get(`${BASE_URL}/education/${id}`);
-    return {
-      status: response.data.status,
-      data: response.data.data,
-      code: response.status,
-      headers: {
-        cacheControl: response.headers['cache-control'],
-        etag: response.headers['etag'],
-        lastModified: response.headers['last-modified'],
-      },
-    };
-  } catch (error) {
-    throw handleApiError(error);
+    const res = await axios.get(`${BASE_URL}/education/${id}`, withAuth(token));
+    return { status: res.data.status, data: res.data.data };
+  } catch (e) {
+    throw handleApiError(e);
   }
 };
 
-// Memperbarui konten edukasi
-export const updateEducation = async (id, educationData) => {
+export const updateEducation = async (id, data, token) => {
   try {
-    const response = await axios.put(`${BASE_URL}/education/${id}`, educationData);
-    // Perbarui di IndexedDB
-    await saveEducation({ ...educationData, id });
-    return {
-      status: response.data.status,
-      message: response.data.pesan,
-      code: response.status,
-    };
-  } catch (error) {
-    throw handleApiError(error);
+    const res = await axios.put(`${BASE_URL}/education/${id}`, data, withAuth(token));
+    return { status: res.data.status, message: res.data.pesan };
+  } catch (e) {
+    throw handleApiError(e);
   }
 };
 
-// Menghapus konten edukasi
-export const deleteEducation = async (id) => {
+export const deleteEducation = async (id, token) => {
   try {
-    const response = await axios.delete(`${BASE_URL}/education/${id}`);
-    // Hapus dari IndexedDB
-    await deleteEducationFromDB(id);
-    return {
-      status: response.data.status,
-      message: response.data.pesan,
-      code: response.status,
-    };
-  } catch (error) {
-    throw handleApiError(error);
+    const res = await axios.delete(`${BASE_URL}/education/${id}`, withAuth(token));
+    return { status: res.data.status, message: res.data.pesan };
+  } catch (e) {
+    throw handleApiError(e);
   }
-};
-
-// Fungsi placeholder untuk menghapus dari IndexedDB (implementasi di educationDB.js)
-const deleteEducationFromDB = async (id) => {
-  // Implementasi sebenarnya ada di educationDB.js
 };

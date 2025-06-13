@@ -11,8 +11,7 @@ const reportWebSchema = new mongoose.Schema({
   evidence: { type: String },
   userId: { type: String, required: true },
   status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
-  level: { type: String, enum: ['low', 'medium', 'high'], required: true },
-  reportType: { type: String, enum: ['positive', 'negative'], required: true },
+  level: { type: String, enum: ['low', 'medium', 'high'], default: 'low' },
   reportedAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

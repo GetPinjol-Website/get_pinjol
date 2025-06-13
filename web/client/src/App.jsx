@@ -8,6 +8,8 @@ import Register from './pages/auth/Register';
 import Dashboard from './pages/user/Dashboard';
 import ReportForm from './pages/user/ReportForm';
 import ReportEdit from './pages/user/ReportEdit';
+import ReportList from './pages/user/ReportList';
+import ApplicationCheck from './pages/user/ApplicationCheck';
 import PinjolList from './pages/user/PinjolList';
 import Education from './pages/user/Education';
 import EducationDetail from './pages/user/EducationDetail';
@@ -17,7 +19,6 @@ import UserManagement from './pages/admin/UserManagement';
 import EducationManagement from './pages/admin/EducationManagement';
 import ReportVerification from './pages/admin/ReportVerification';
 import AuthPresenter from './presenters/AuthPresenter';
-import EducationPresenter from './presenters/EducationPresenter';
 import { motion } from 'framer-motion';
 import { pageTransition } from './utils/animations';
 
@@ -37,24 +38,15 @@ function App() {
     showSuccess: (message) => console.log(message),
   });
 
-  const educationPresenter = new EducationPresenter({
-    setLoading: setIsLoading,
-    showError: (message) => console.error(message),
-    showSuccess: (message) => console.log(message),
-    setEducations: () => {},
-    navigate,
-  });
-
   const hideHeaderFooter = location.pathname === '/login' || location.pathname === '/register';
 
   useEffect(() => {
     const controller = new AbortController();
     authPresenter.checkAuthStatus(controller.signal).then(() => {
       if (isAuthenticated && role) {
-        educationPresenter.syncOfflineEducations(localStorage.getItem('token'));
         if (role === 'admin' && !location.pathname.startsWith('/admin')) {
           navigate('/admin', { replace: true });
-        } else if (role === 'user' && !location.pathname.startsWith('/dashboard') && !location.pathname.match(/^\/(education|pinjol)/)) {
+        } else if (role === 'user' && !location.pathname.startsWith('/dashboard') && !location.pathname.match(/^\/(education|pinjol|applications)/)) {
           navigate('/dashboard', { replace: true });
         }
       } else {
@@ -77,7 +69,7 @@ function App() {
       }
     });
     return () => controller.abort();
-  }, []); // Run once on mount
+  }, []);
 
   if (isLoading) {
     return <div className="spinner"><div></div></div>;
@@ -102,11 +94,13 @@ function App() {
           <Route path="/pinjol" element={<PinjolList />} />
           <Route path="/education" element={<Education />} />
           <Route path="/education/:id" element={<EducationDetail />} />
+          <Route path="/reports" element={<ReportList />} />
           {isAuthenticated && role === 'user' && (
             <>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/report/new" element={<ReportForm />} />
               <Route path="/report/edit/:id" element={<ReportEdit />} />
+              <Route path="/applications" element={<ApplicationCheck />} />
             </>
           )}
           {isAuthenticated && role === 'admin' && (

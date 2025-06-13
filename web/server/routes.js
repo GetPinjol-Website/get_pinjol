@@ -7,12 +7,14 @@ const {
   createReportWeb,
   createReportApp,
   getAllReports,
+  getAllReportsAdmin,
   getAllReportsByUser,
   getReportById,
   updateReportWeb,
   updateReportApp,
   deleteReportWeb,
   deleteReportApp,
+  getAllApplications,
 } = require('./handlers/reportHandler');
 const User = require('./models/user');
 
@@ -49,6 +51,7 @@ const routes = [
           .header('ETag', `user-${id}`)
           .header('Last-Modified', user.updatedAt.toUTCString());
       } catch (error) {
+        console.error('Error in getUserById:', error);
         return h.response({ status: 'error', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
       }
     },
@@ -105,6 +108,11 @@ const routes = [
   },
   {
     method: 'GET',
+    path: '/reports/admin',
+    handler: getAllReportsAdmin,
+  },
+  {
+    method: 'GET',
     path: '/reports/user',
     handler: getAllReportsByUser,
   },
@@ -132,6 +140,11 @@ const routes = [
     method: 'DELETE',
     path: '/report/app/{id}',
     handler: deleteReportApp,
+  },
+  {
+    method: 'GET',
+    path: '/applications',
+    handler: getAllApplications,
   },
   {
     method: 'GET',

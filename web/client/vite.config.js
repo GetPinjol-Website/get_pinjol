@@ -27,17 +27,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico}'],
+        globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico}'], // Cache hanya aset statis
         runtimeCaching: [
-          {
-            urlPattern: ({ url }) => url.origin === 'http://localhost:9000' && !url.pathname.match(/^\/(login|register)/),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              cacheableResponse: { statuses: [0, 200] },
-              expiration: { maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 },
-            },
-          },
           {
             urlPattern: ({ request }) => request.destination === 'image',
             handler: 'StaleWhileRevalidate',
@@ -47,6 +38,7 @@ export default defineConfig({
               expiration: { maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 },
             },
           },
+          // Tidak ada caching untuk API, semua ke endpoint langsung
         ],
       },
       devOptions: {

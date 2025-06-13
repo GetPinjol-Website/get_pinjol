@@ -17,7 +17,6 @@ export const REPORT_CATEGORIES = [
   'illegal charges: Pungutan Ilegal',
   'false advertising: Iklan Palsu',
   'unfair practices: Praktik Tidak Adil',
-  'other: Lainnya',
 ];
 
 export const REPORT_TYPES = {
@@ -29,6 +28,12 @@ export const REPORT_STATUSES = {
   PENDING: 'Menunggu',
   ACCEPTED: 'Diterima',
   REJECTED: 'Ditolak',
+};
+
+export const REPORT_LEVELS = {
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
 };
 
 export const EDUCATION_CATEGORIES = [
