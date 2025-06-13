@@ -29,7 +29,8 @@ class UserModel {
 
   static async getAllUsers(filters = {}) {
     try {
-      const response = await getAllUsers(filters);
+      const token = this.getToken();
+      const response = await getAllUsers({ ...filters, token });
       if (response.status !== 'sukses') throw new Error(response.message);
       return response.data;
     } catch (error) {
