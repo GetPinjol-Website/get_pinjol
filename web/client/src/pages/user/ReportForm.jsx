@@ -7,6 +7,7 @@ import Select from '../../components/common/Select';
 import TextArea from '../../components/common/TextArea';
 import Button from '../../components/common/Button';
 import ErrorMessage from '../../components/common/ErrorMessage';
+import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
 import Card from '../../components/ui/Card';
 import Sidebar from '../../components/layout/Sidebar';
@@ -35,20 +36,13 @@ function ReportForm() {
 
   const [formData, setFormData] = useState(initialFormData);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const presenter = new ReportPresenter({
     setLoading: setIsLoading,
     showError: setError,
-    showSuccess: (message) => {
-      window.Swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: message,
-        confirmButtonColor: '#658147',
-        background: '#E7F0DC',
-      });
-    },
+    showSuccess: setSuccess,
     navigate,
     setReport: (data) => {
       setFormData({
@@ -63,6 +57,7 @@ function ReportForm() {
         userId: data.data?.userId || UserModel.getUserId() || '',
       });
     },
+    refreshReports: () => presenter.getUserReports({ _t: Date.now() }, token),
   });
 
   useEffect(() => {
@@ -71,23 +66,18 @@ function ReportForm() {
       navigate('/login');
       return;
     }
-
     if (isEdit && id) {
-      presenter.getReportById(id, type || REPORT_TYPES.WEB, token);
+      presenter.getReportById(id, type || REPORT_TYPES.WEB, { _t: Date.now() }, token);
     }
   }, [id, type, token, navigate, isEdit, presenter]);
 
   const validateForm = () => {
-    const missingFields = [];
-    if (!formData.appName.trim()) missingFields.push('Nama Aplikasi');
-    if (!formData.description.trim()) missingFields.push('Deskripsi');
-    if (!formData.incidentDate || !isValidDate(formData.incidentDate)) missingFields.push('Tanggal Kejadian');
-    if (formData.evidence && !isValidUrl(formData.evidence)) missingFields.push('Link Bukti tidak valid');
-    if (!formData.userId || !token) {
-      navigate('/login');
-      missingFields.push('ID Pengguna (silakan login ulang)');
-    }
-    return missingFields.length > 0 ? missingFields : null;
+    if (!formData.appName.trim()) return 'Nama Aplikasi wajib diisi';
+    if (!formData.description.trim()) return 'Deskripsi wajib diisi';
+    if (!formData.incidentDate || !isValidDate(formData.incidentDate)) return 'Tanggal Kejadian tidak valid';
+    if (formData.evidence && !isValidUrl(formData.evidence)) return 'Link Bukti tidak valid';
+    if (!formData.userId || !token) return 'ID Pengguna tidak tersedia, silakan login ulang';
+    return null;
   };
 
   const handleChange = (e) => {
@@ -107,25 +97,20 @@ function ReportForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const missingFields = validateForm();
-    if (missingFields) {
-      window.Swal.fire({
-        icon: 'warning',
-        title: 'Formulir Tidak Lengkap',
-        html: `Field berikut wajib diisi atau tidak valid:<br><ul class="list-disc list-inside">${missingFields
-          .map((field) => `<li>${field}</li>`)
-          .join('')}</ul>`,
-        confirmButtonColor: '#658147',
-        background: '#E7F0DC',
-      });
-      setError('Silakan lengkapi formulir');
+    if (!token) {
+      setError('Sesi telah berakhir. Silakan login kembali.');
+      navigate('/login');
       return;
     }
-
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     try {
       setError('');
+      setIsLoading(true);
       const { type, category, ...dataToSend } = formData;
-      // Only include category if it's non-empty
       if (category.length > 0) {
         dataToSend.category = category;
       }
@@ -135,16 +120,24 @@ function ReportForm() {
           dataToSend,
           token
         );
+        setSuccess('Laporan berhasil diperbarui');
       } else {
         await presenter[formData.type === REPORT_TYPES.WEB ? 'createWebReport' : 'createAppReport'](
           dataToSend,
           token
         );
+        setSuccess('Laporan berhasil dibuat');
+        setFormData(initialFormData);
       }
-      setFormData(initialFormData);
+      presenter.refreshReports();
+      if (!isEdit) {
+        navigate('/dashboard');
+      }
     } catch (err) {
       console.error('Error submitting form:', err);
       setError(err.message || 'Gagal menyimpan laporan');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -163,91 +156,76 @@ function ReportForm() {
       <Sidebar role="user" />
       <div className="flex-1 flex justify-center items-start py-6 overflow-x-hidden">
         <div className="container mx-auto max-w-4xl px-4 w-full">
-          <motion.h1
-            className="text-3xl font-bold text-pinjol-dark-3 mb-6 text-center"
-            variants={itemVariants}
-          >
+          <h1 className="text-3xl font-bold text-pinjol-dark-3 mb-6 text-center">
             {isEdit ? 'Edit Laporan' : 'Buat Laporan Baru'}
-          </motion.h1>
+          </h1>
           <ErrorMessage message={error} onClose={() => setError('')} />
+          <SuccessMessage message={success} onClose={() => setSuccess('')} />
           {isLoading && <Spinner />}
           <Card title={isEdit ? 'Form Edit Laporan' : 'Form Laporan Baru'} className="mb-6">
             <Form onSubmit={handleSubmit} className="space-y-4">
-              <motion.div variants={itemVariants}>
-                <Select
-                  label="Tipe Laporan"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  options={[
-                    { value: REPORT_TYPES.WEB, label: 'Web' },
-                    { value: REPORT_TYPES.APP, label: 'Aplikasi' },
-                  ]}
-                  required
-                  className="bg-pinjol-light-2"
-                />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Input
-                  label="Nama Aplikasi/Web"
-                  name="appName"
-                  value={formData.appName}
-                  onChange={handleChange}
-                  required
-                  className="bg-pinjol-light-2"
-                />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <TextArea
-                  label="Deskripsi Keluhan"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  className="bg-pinjol-light-2"
-                  rows="5"
-                />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <DropdownChecklist
-                  label="Kategori (opsional)"
-                  name="category"
-                  options={categoryOptions}
-                  selected={formData.category}
-                  onChange={handleCategoryChange}
-                />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Input
-                  label="Tanggal Kejadian"
-                  name="incidentDate"
-                  type="date"
-                  value={formData.incidentDate}
-                  onChange={handleChange}
-                  required
-                  className="bg-pinjol-light-2"
-                />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Input
-                  label="Link Bukti (opsional)"
-                  name="evidence"
-                  value={formData.evidence}
-                  onChange={handleChange}
-                  placeholder={EVIDENCE_PLACEHOLDER}
-                  className="bg-pinjol-light-2"
-                />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2 w-full"
-                >
-                  <i className="fas fa-save mr-2"></i>
-                  {isEdit ? 'Perbarui Laporan' : 'Kirim Laporan'}
-                </Button>
-              </motion.div>
+              <Select
+                label="Tipe Laporan"
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                options={[
+                  { value: REPORT_TYPES.WEB, label: 'Web' },
+                  { value: REPORT_TYPES.APP, label: 'Aplikasi' },
+                ]}
+                required
+                className="bg-pinjol-light-2"
+                disabled={isEdit} // Disable type change when editing
+              />
+              <Input
+                label="Nama Aplikasi/Web"
+                name="appName"
+                value={formData.appName}
+                onChange={handleChange}
+                required
+                className="bg-pinjol-light-2"
+              />
+              <TextArea
+                label="Deskripsi Keluhan"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                className="bg-pinjol-light-2"
+                rows={5}
+              />
+              <DropdownChecklist
+                label="Kategori (opsional)"
+                name="category"
+                options={categoryOptions}
+                selected={formData.category}
+                onChange={handleCategoryChange}
+              />
+              <Input
+                label="Tanggal Kejadian"
+                name="incidentDate"
+                type="date"
+                value={formData.incidentDate}
+                onChange={handleChange}
+                required
+                className="bg-pinjol-light-2"
+              />
+              <Input
+                label="Link Bukti (opsional)"
+                name="evidence"
+                value={formData.evidence}
+                onChange={handleChange}
+                placeholder={EVIDENCE_PLACEHOLDER}
+                className="bg-pinjol-light-2"
+              />
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2 w-full"
+              >
+                <i className="fas fa-save mr-2"></i>
+                {isEdit ? 'Perbarui Laporan' : 'Kirim Laporan'}
+              </Button>
             </Form>
           </Card>
         </div>

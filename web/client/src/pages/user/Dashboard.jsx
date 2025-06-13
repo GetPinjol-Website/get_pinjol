@@ -7,6 +7,7 @@ import Table from '../../components/ui/Table';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import ErrorMessage from '../../components/common/ErrorMessage';
+import SuccessMessage from '../../components/common/SuccessMessage';
 import Spinner from '../../components/common/Spinner';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import Select from '../../components/common/Select';
@@ -18,51 +19,62 @@ import { itemVariants } from '../../utils/animations';
 function Dashboard() {
   const [reports, setReports] = useState([]);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [filterType, setFilterType] = useState('');
   const [modal, setModal] = useState({ isOpen: false, id: null, type: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const reportsPerPage = 25;
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
   const presenter = new ReportPresenter({
     setLoading: setIsLoading,
     showError: setError,
-    showSuccess: (message) => {
-      window.Swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: message,
-        confirmButtonColor: '#658147',
-        background: '#E7F0DC',
-      });
-    },
+    showSuccess: setSuccess,
     setReports: (data) => setReports([...(data.data || [])]),
     navigate,
     refreshReports: () => {
-      presenter.getUserReports({ type: filterType || undefined, _t: Date.now() });
+      presenter.getUserReports({ type: filterType || undefined, _t: Date.now() }, token);
       setCurrentPage(1);
     },
   });
 
   useEffect(() => {
-    presenter.getUserReports({ type: filterType || undefined, _t: Date.now() });
-  }, [filterType]);
+    if (!token) {
+      setError('Anda belum login. Silakan login terlebih dahulu.');
+      navigate('/login');
+      return;
+    }
+    presenter.getUserReports({ type: filterType || undefined, _t: Date.now() }, token);
+  }, [filterType, token]);
 
   const handleDelete = async (id, type) => {
+    if (!token) {
+      setError('Sesi telah berakhir. Silakan login kembali.');
+      navigate('/login');
+      return;
+    }
     setModal({ isOpen: true, id, type });
   };
 
   const confirmDelete = async () => {
+    if (!token) {
+      setError('Sesi telah berakhir. Silakan login kembali.');
+      navigate('/login');
+      return;
+    }
     try {
       const { id, type } = modal;
-      console.log('Initiating delete for ID:', id, 'Type:', type);
       if (type === REPORT_TYPES.WEB) {
-        await presenter.deleteWebReport(id);
+        await presenter.deleteWebReport(id, token);
       } else if (type === REPORT_TYPES.APP) {
-        await presenter.deleteAppReport(id);
+        await presenter.deleteAppReport(id, token);
       }
+      setReports((prev) => prev.filter((report) => report.id !== id));
+      setSuccess('Laporan berhasil dihapus');
       setModal({ isOpen: false, id: null, type: '' });
+      presenter.refreshReports();
     } catch (err) {
       console.error('Error in confirmDelete:', err);
       setError(err.message || 'Gagal menghapus laporan');
@@ -100,54 +112,58 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex bg-pinjol-light-1">
+    <motion.div
+      className="flex min-h-screen bg-pinjol-light-1 font-roboto"
+      initial="hidden"
+      animate="visible"
+      variants={itemVariants}
+    >
       <Sidebar role="user" />
-      <div className="bg-pinjol-light-1 w-full">
-        <FullScreenSection className="pt-20">
-          <motion.div className="container mx-auto px-4" variants={itemVariants} initial="hidden" animate="visible">
-            <motion.h1 className="text-3xl font-bold text-pinjol-dark-3 mb-6 flex items-center" variants={itemVariants}>
-              <i className="fas fa-tachometer-alt mr-3"></i> Dashboard Pengguna
-            </motion.h1>
-            <ErrorMessage message={error} onClose={() => setError('')} />
-            {isLoading && <Spinner />}
-            <Card title="Laporan Anda">
-              <motion.div className="flex justify-between mb-6" variants={itemVariants}>
-                <div className="flex items-center space-x-4">
-                  <Select
-                    label="Filter Tipe"
-                    name="filterType"
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    options={[
-                      { value: '', label: 'Semua' },
-                      { value: REPORT_TYPES.WEB, label: 'Web' },
-                      { value: REPORT_TYPES.APP, label: 'Aplikasi' },
-                    ]}
-                  />
-                </div>
-                <Button onClick={() => navigate('/report/new')} className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2"><i className="fas fa-plus mr-2"></i> Buat Laporan Baru</Button>
-              </motion.div>
-              <Table
-                headers={headers}
-                data={currentReports}
-                renderRow={renderRow}
-                totalPages={totalPages}
-                currentPage={currentPage}
-                onPageChange={handlePageChange}
-              />
-            </Card>
-          </motion.div>
-        </FullScreenSection>
-        <ConfirmationModal
-          isOpen={modal.isOpen}
-          onClose={() => setModal({ isOpen: false, id: null, type: '' })}
-          onConfirm={confirmDelete}
-          title="Konfirmasi Hapus"
-          message="Yakin ingin menghapus laporan ini?"
-          confirmText="Hapus"
-        />
+      <div className="flex-1 flex justify-center items-start py-6 overflow-x-hidden">
+        <div className="container mx-auto max-w-6xl px-4 w-full">
+          <h1 className="text-3xl font-bold text-pinjol-dark-3 mb-6 text-center">
+            Dashboard Pengguna
+          </h1>
+          <ErrorMessage message={error} onClose={() => setError('')} />
+          <SuccessMessage message={success} onClose={() => setSuccess('')} />
+          {isLoading && <Spinner />}
+          <Card title="Laporan Anda">
+            <div className="flex justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <Select
+                  label="Filter Tipe"
+                  name="filterType"
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  options={[
+                    { value: '', label: 'Semua' },
+                    { value: REPORT_TYPES.WEB, label: 'Web' },
+                    { value: REPORT_TYPES.APP, label: 'Aplikasi' },
+                  ]}
+                />
+              </div>
+              <Button onClick={() => navigate('/report/new')} className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2"><i className="fas fa-plus mr-2"></i> Buat Laporan Baru</Button>
+            </div>
+            <Table
+              headers={headers}
+              data={currentReports}
+              renderRow={renderRow}
+              totalPages={totalPages}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+            />
+          </Card>
+        </div>
       </div>
-    </div>
+      <ConfirmationModal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ isOpen: false, id: null, type: '' })}
+        onConfirm={confirmDelete}
+        title="Konfirmasi Hapus"
+        message="Yakin ingin menghapus laporan ini?"
+        confirmText="Hapus"
+      />
+    </motion.div>
   );
 }
 
