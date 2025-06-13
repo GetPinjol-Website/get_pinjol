@@ -89,6 +89,25 @@ class UserModel {
       throw new Error('Gagal logout');
     }
   }
+
+  static getUserId() {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token tidak ditemukan di localStorage');
+        return '';
+      }
+      // Dekode payload JWT (bagian tengah dari token: header.payload.signature)
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64));
+      console.log('Decoded JWT payload:', payload); // Debugging
+      return payload.id || '';
+    } catch (error) {
+      console.error('Error decoding token in getUserId:', error.message);
+      return '';
+    }
+  }
 }
 
 export default UserModel;

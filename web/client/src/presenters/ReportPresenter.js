@@ -9,23 +9,22 @@ class ReportPresenter {
   }
 
   validateReportData(reportData) {
-    if (!reportData.appName || !reportData.description || !Array.isArray(reportData.category) || !reportData.category.length || !reportData.incidentDate) {
-      throw new Error('Semua field wajib diisi kecuali bukti');
+    if (!reportData.appName || !reportData.description || !reportData.incidentDate || !reportData.userId) {
+      throw new Error('Semua field wajib diisi kecuali bukti dan kategori');
     }
     if (!isValidDate(reportData.incidentDate)) throw new Error('Tanggal kejadian tidak valid');
     if (reportData.evidence && !isValidUrl(reportData.evidence)) throw new Error('Link bukti tidak valid');
-    if (!['low', 'medium', 'high'].includes(reportData.level)) throw new Error('Tingkat laporan harus rendah, sedang, atau tinggi');
   }
 
-  async createWebReport(reportData) {
+  async createWebReport(reportData, token) {
     try {
       this.view.setLoading?.(true);
-      this.validateReportData(reportData);
-      const token = UserModel.getToken();
+      const { type, ...dataToSend } = reportData;
+      dataToSend.userId = UserModel.getUserId();
+      this.validateReportData(dataToSend);
       if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole() || 'user';
-      console.log('Creating web report:', reportData);
-      const response = await ReportModel.createWebReport(reportData, token, role);
+      console.log('Creating web report:', dataToSend);
+      const response = await ReportModel.createWebReport(dataToSend, token);
       this.view.showSuccess?.('Laporan web berhasil dibuat');
       this.view.navigate?.('/dashboard');
       return response;
@@ -43,15 +42,15 @@ class ReportPresenter {
     }
   }
 
-  async createAppReport(reportData) {
+  async createAppReport(reportData, token) {
     try {
       this.view.setLoading?.(true);
-      this.validateReportData(reportData);
-      const token = UserModel.getToken();
+      const { type, ...dataToSend } = reportData;
+      dataToSend.userId = UserModel.getUserId();
+      this.validateReportData(dataToSend);
       if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole() || 'user';
-      console.log('Creating app report:', reportData);
-      const response = await ReportModel.createAppReport(reportData, token, role);
+      console.log('Creating app report:', dataToSend);
+      const response = await ReportModel.createAppReport(dataToSend, token);
       this.view.showSuccess?.('Laporan aplikasi berhasil dibuat');
       this.view.navigate?.('/dashboard');
       return response;
@@ -69,16 +68,15 @@ class ReportPresenter {
     }
   }
 
-  async updateWebReport(id, reportData) {
+  async updateWebReport(id, reportData, token) {
     try {
       this.view.setLoading?.(true);
-      if (!reportData.status) this.validateReportData(reportData);
-      const token = UserModel.getToken();
+      const { type, id: reportId, ...dataToSend } = reportData;
+      dataToSend.userId = UserModel.getUserId();
+      if (!dataToSend.status) this.validateReportData(dataToSend);
       if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole() || 'user';
-      if (role === 'admin' && !reportData.status) throw new Error('Admin tidak dapat mengedit laporan');
-      console.log('Updating web report ID:', id, 'Data:', reportData);
-      const response = await ReportModel.updateWebReport(id, reportData, token, role);
+      console.log('Updating web report ID:', id, 'Data:', dataToSend);
+      const response = await ReportModel.updateWebReport(id, dataToSend, token);
       this.view.showSuccess?.('Laporan web berhasil diperbarui');
       this.view.navigate?.('/dashboard');
       return response;
@@ -98,16 +96,15 @@ class ReportPresenter {
     }
   }
 
-  async updateAppReport(id, reportData) {
+  async updateAppReport(id, reportData, token) {
     try {
       this.view.setLoading?.(true);
-      if (!reportData.status) this.validateReportData(reportData);
-      const token = UserModel.getToken();
+      const { type, id: reportId, ...dataToSend } = reportData;
+      dataToSend.userId = UserModel.getUserId();
+      if (!dataToSend.status) this.validateReportData(dataToSend);
       if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole() || 'user';
-      if (role === 'admin' && !reportData.status) throw new Error('Admin tidak dapat mengedit laporan');
-      console.log('Updating app report ID:', id, 'Data:', reportData);
-      const response = await ReportModel.updateAppReport(id, reportData, token, role);
+      console.log('Updating app report ID:', id, 'Data:', dataToSend);
+      const response = await ReportModel.updateAppReport(id, dataToSend, token);
       this.view.showSuccess?.('Laporan aplikasi berhasil diperbarui');
       this.view.navigate?.('/dashboard');
       return response;
@@ -132,8 +129,6 @@ class ReportPresenter {
       this.view.setLoading?.(true);
       const token = UserModel.getToken();
       if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole() || 'user';
-      if (role === 'admin') throw new Error('Admin tidak dapat menghapus laporan');
       console.log('Deleting web report ID:', id);
       await ReportModel.deleteWebReport(id, token);
       this.view.showSuccess?.('Laporan web berhasil dihapus');
@@ -157,8 +152,6 @@ class ReportPresenter {
       this.view.setLoading?.(true);
       const token = UserModel.getToken();
       if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole() || 'user';
-      if (role === 'admin') throw new Error('Admin tidak dapat menghapus laporan');
       console.log('Deleting app report ID:', id);
       await ReportModel.deleteAppReport(id, token);
       this.view.showSuccess?.('Laporan aplikasi berhasil dihapus');
@@ -204,9 +197,8 @@ class ReportPresenter {
     try {
       this.view.setLoading?.(true);
       const token = UserModel.getToken();
-      const role = UserModel.getRole() || 'guest';
       console.log('Fetching all reports with filters:', filters);
-      const reports = await ReportModel.getAllReports({ ...filters }, token, role);
+      const reports = await ReportModel.getAllReports(filters, token);
       this.view.setReports?.(reports);
       console.log('Received reports:', reports);
       return reports;
@@ -216,7 +208,7 @@ class ReportPresenter {
         this.view.setReports?.([]);
         this.view.showError?.('Anda sedang offline, tidak dapat memuat laporan');
       } else {
-        const errorMessage = error.response?.data?.pesan || error.message || 'Gagal mengambil daftar laporan';
+        const errorMessage = error.response?.data?.pesan || error.message || 'Gagal mengambil semua laporan';
         this.view.showError?.(errorMessage);
       }
       throw error;
@@ -230,10 +222,9 @@ class ReportPresenter {
       this.view.setLoading?.(true);
       const token = UserModel.getToken();
       if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole() || 'user';
       console.log('Fetching user reports with filters:', filters);
-      const reports = await ReportModel.getUserReports({ ...filters }, token, role);
-      this.view.setReports?.([...reports.data]); // Update untuk mengakses properti 'data'
+      const reports = await ReportModel.getUserReports(filters, token);
+      this.view.setReports?.([...reports.data]);
       console.log('Received user reports:', reports);
       return reports;
     } catch (error) {
@@ -255,9 +246,8 @@ class ReportPresenter {
     try {
       this.view.setLoading?.(true);
       const token = UserModel.getToken();
-      const role = UserModel.getRole() || 'guest';
       console.log('Fetching all applications with filters:', filters);
-      const applications = await ReportModel.getAllApplications({ ...filters }, token, role);
+      const applications = await ReportModel.getAllApplications(filters, token);
       this.view.setApplications?.(applications);
       console.log('Received applications:', applications);
       return applications;
@@ -268,40 +258,6 @@ class ReportPresenter {
         this.view.showError?.('Anda sedang offline, tidak dapat memuat daftar aplikasi');
       } else {
         const errorMessage = error.response?.data?.pesan || error.message || 'Gagal mengambil daftar aplikasi';
-        this.view.showError?.(errorMessage);
-      }
-      throw error;
-    } finally {
-      this.view.setLoading?.(false);
-    }
-  }
-
-  async verifyReport(id, { status }, type) {
-    try {
-      this.view.setLoading?.(true);
-      const token = UserModel.getToken();
-      if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole();
-      if (role !== 'admin') throw new Error('Hanya admin yang dapat memverifikasi laporan');
-      if (!type || ![REPORT_TYPES.WEB, REPORT_TYPES.APP].includes(type)) {
-        throw new Error('Tipe laporan tidak valid');
-      }
-      const reportData = { status };
-      console.log('Verifying report ID:', id, 'Status:', status, 'Type:', type);
-      const response = await (type === REPORT_TYPES.WEB
-        ? ReportModel.updateWebReport(id, reportData, token, role)
-        : ReportModel.updateAppReport(id, reportData, token, role));
-      this.view.showSuccess?.(`Laporan ${status === 'accepted' ? 'diterima' : 'ditolak'} berhasil`);
-      this.view.refreshReports?.();
-      return response;
-    } catch (error) {
-      console.error('Error in verifyReport:', error);
-      if (error.isOffline) {
-        this.view.showError?.('Anda sedang offline, tidak dapat memverifikasi laporan');
-      } else if (error.status === 404) {
-        this.view.showError?.('Laporan tidak ditemukan');
-      } else {
-        const errorMessage = error.response?.data?.pesan || error.message || 'Terjadi kesalahan pada server';
         this.view.showError?.(errorMessage);
       }
       throw error;

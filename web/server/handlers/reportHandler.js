@@ -13,18 +13,17 @@ const verifyToken = (authHeader) => {
     throw new Error('Autentikasi diperlukan', { cause: { statusCode: 401 } });
   }
   const token = authHeader.split(' ')[1];
-  let decoded;
   try {
-    decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, 'secret_key');
     if (!decoded.id || !decoded.role) {
       console.error('Token tidak memiliki id atau role:', decoded);
-      throw new Error('Token tidak valid: ID atau role pengguna tidak ditemukan');
+      throw new Error('Token tidak valid: ID atau role pengguna tidak ditemukan', { cause: { statusCode: 401 } });
     }
+    return decoded;
   } catch (error) {
     console.error('Error verifikasi token:', error.message);
     throw new Error('Token tidak valid', { cause: { statusCode: 401 } });
   }
-  return decoded;
 };
 
 // Update Application counts and recommendation
@@ -78,22 +77,30 @@ const createReportWeb = async (request, h) => {
   try {
     const decoded = verifyToken(request.headers.authorization);
     const { appName, description, category, incidentDate, evidence, level } = request.payload;
-    
+
     console.log('Received payload for createReportWeb:', { appName, description, category, incidentDate, evidence, level });
 
-    if (!appName || !description || !category || !incidentDate) {
-      console.log('Missing required fields:', { appName, description, category, incidentDate });
-      return h.response({ status: 'gagal', pesan: 'Semua field kecuali evidence wajib diisi', missingFields: { appName, description, category, incidentDate } }).code(400).header('Cache-Control', 'no-store');
+    const missingFields = [];
+    if (!appName) missingFields.push('appName');
+    if (!description) missingFields.push('description');
+    if (!incidentDate) missingFields.push('incidentDate');
+    if (!category || !Array.isArray(category) || !category.length) missingFields.push('category');
+
+    if (missingFields.length > 0) {
+      return h.response({ status: 'gagal', pesan: 'Semua field kecuali evidence wajib diisi', missingFields }).code(400).header('Cache-Control', 'no-store');
     }
 
     if (isNaN(Date.parse(incidentDate))) {
-      console.log('Invalid incidentDate:', incidentDate);
       return h.response({ status: 'gagal', pesan: 'Tanggal insiden tidak valid', incidentDate }).code(400).header('Cache-Control', 'no-store');
     }
 
-    if (!Array.isArray(category) || !category.length) {
-      console.log('Invalid category:', category);
-      return h.response({ status: 'gagal', pesan: 'Kategori harus berupa array non-kosong', category }).code(400).header('Cache-Control', 'no-store');
+    if (!validateCategories(category)) {
+      return h.response({ status: 'gagal', pesan: 'Kategori tidak valid', category }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    const validLevels = ['low', 'medium', 'high'];
+    if (level && !validLevels.includes(level)) {
+      return h.response({ status: 'gagal', pesan: 'Level harus low, medium, atau high', level }).code(400).header('Cache-Control', 'no-store');
     }
 
     const newReport = new ReportWeb({
@@ -105,7 +112,7 @@ const createReportWeb = async (request, h) => {
       evidence,
       userId: decoded.id,
       status: 'pending',
-      level: level || 'low', // Gunakan level dari payload jika ada, default 'low'
+      level: level || 'low',
       updatedAt: new Date(),
     });
 
@@ -114,20 +121,14 @@ const createReportWeb = async (request, h) => {
     return h.response({ status: 'sukses', pesan: 'Laporan web berhasil dibuat', data: newReport }).code(201).header('Cache-Control', 'no-store');
   } catch (error) {
     console.error('Error in createReportWeb:', error.message, error);
-    if (error.message === 'Token tidak valid' || error.name === 'JsonWebTokenError') {
-      return h.response({ status: 'gagal', pesan: error.message }).code(401).header('Cache-Control', 'no-store');
+    if (error.cause?.statusCode === 401 || error.message.includes('Token')) {
+      return h.response({ status: 'gagal', pesan: 'Autentikasi gagal' }).code(401).header('Cache-Control', 'no-store');
     }
-    if (error.message === 'Autentikasi diperlukan') {
-      return h.response({ status: 'gagal', pesan: error.message }).code(401).header('Cache-Control', 'no-store');
-    }
-    if (error.name === 'ValidationError') {
-      return h.response({ status: 'gagal', pesan: 'Data tidak valid: ' + error.message, details: error.errors }).code(400).header('Cache-Control', 'no-store');
-    }
-    return h.response({ status: 'gagal', pesan: error.message || 'Kesalahan server internal', error: error.message }).code(400).header('Cache-Control', 'no-store');
+    return h.response({ status: 'gagal', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
   }
 };
 
-// Create Report App
+// Create Report App (mirip dengan createReportWeb)
 const createReportApp = async (request, h) => {
   try {
     const decoded = verifyToken(request.headers.authorization);
@@ -135,19 +136,27 @@ const createReportApp = async (request, h) => {
 
     console.log('Received payload for createReportApp:', { appName, description, category, incidentDate, evidence, level });
 
-    if (!appName || !description || !category || !incidentDate) {
-      console.log('Missing required fields:', { appName, description, category, incidentDate });
-      return h.response({ status: 'gagal', pesan: 'Semua field kecuali evidence wajib diisi', missingFields: { appName, description, category, incidentDate } }).code(400).header('Cache-Control', 'no-store');
+    const missingFields = [];
+    if (!appName) missingFields.push('appName');
+    if (!description) missingFields.push('description');
+    if (!incidentDate) missingFields.push('incidentDate');
+    if (!category || !Array.isArray(category) || !category.length) missingFields.push('category');
+
+    if (missingFields.length > 0) {
+      return h.response({ status: 'gagal', pesan: 'Semua field kecuali evidence wajib diisi', missingFields }).code(400).header('Cache-Control', 'no-store');
     }
 
     if (isNaN(Date.parse(incidentDate))) {
-      console.log('Invalid incidentDate:', incidentDate);
       return h.response({ status: 'gagal', pesan: 'Tanggal insiden tidak valid', incidentDate }).code(400).header('Cache-Control', 'no-store');
     }
 
-    if (!Array.isArray(category) || !category.length) {
-      console.log('Invalid category:', category);
-      return h.response({ status: 'gagal', pesan: 'Kategori harus berupa array non-kosong', category }).code(400).header('Cache-Control', 'no-store');
+    if (!validateCategories(category)) {
+      return h.response({ status: 'gagal', pesan: 'Kategori tidak valid', category }).code(400).header('Cache-Control', 'no-store');
+    }
+
+    const validLevels = ['low', 'medium', 'high'];
+    if (level && !validLevels.includes(level)) {
+      return h.response({ status: 'gagal', pesan: 'Level harus low, medium, atau high', level }).code(400).header('Cache-Control', 'no-store');
     }
 
     const newReport = new ReportApp({
@@ -159,25 +168,20 @@ const createReportApp = async (request, h) => {
       evidence,
       userId: decoded.id,
       status: 'pending',
-      level: level || 'low', // Gunakan level dari payload jika ada, default 'low'
+      level: level || 'low',
       updatedAt: new Date(),
     });
+    
 
     await newReport.save();
     console.log('Report saved:', newReport);
     return h.response({ status: 'sukses', pesan: 'Laporan aplikasi berhasil dibuat', data: newReport }).code(201).header('Cache-Control', 'no-store');
   } catch (error) {
     console.error('Error in createReportApp:', error.message, error);
-    if (error.message === 'Token tidak valid' || error.name === 'JsonWebTokenError') {
-      return h.response({ status: 'gagal', pesan: error.message }).code(401).header('Cache-Control', 'no-store');
+    if (error.cause?.statusCode === 401 || error.message.includes('Token')) {
+      return h.response({ status: 'gagal', pesan: 'Autentikasi gagal' }).code(401).header('Cache-Control', 'no-store');
     }
-    if (error.message === 'Autentikasi diperlukan') {
-      return h.response({ status: 'gagal', pesan: error.message }).code(401).header('Cache-Control', 'no-store');
-    }
-    if (error.name === 'ValidationError') {
-      return h.response({ status: 'gagal', pesan: 'Data tidak valid: ' + error.message, details: error.errors }).code(400).header('Cache-Control', 'no-store');
-    }
-    return h.response({ status: 'gagal', pesan: error.message || 'Kesalahan server internal', error: error.message }).code(400).header('Cache-Control', 'no-store');
+    return h.response({ status: 'gagal', pesan: 'Kesalahan server internal' }).code(500).header('Cache-Control', 'no-store');
   }
 };
 
