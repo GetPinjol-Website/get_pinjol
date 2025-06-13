@@ -1,5 +1,6 @@
 # GetPinjol - Solusi Aman Pinjaman Online
 
+![GetPinjol](https://media.discordapp.net/attachments/1372924635129188394/1383023383339466852/logo.png?ex=684d4865&is=684bf6e5&hm=6a299f2c4fff38b67bbea042efd705afb1066672c64e10ef6df8e567abb70109&=&format=webp&quality=lossless&width=563&height=563)
 ![Coding Camp Logo](https://dicoding-web-img.sgp1.cdn.digitaloceanspaces.com/original/academy/dos-univ_coding_camp_powered_by_dbs_foundation_2025_ilt_quiz_soft_skill_logo_051224110842.png)
 
 **Powered by DBS Foundation | Road to Future Workforce**
