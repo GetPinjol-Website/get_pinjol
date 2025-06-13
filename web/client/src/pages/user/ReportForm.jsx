@@ -23,6 +23,7 @@ function ReportForm() {
   const isEdit = !!id;
   const token = localStorage.getItem('token');
 
+  // Initialize form state with default values
   const initialFormData = {
     appName: '',
     description: '',
@@ -65,7 +66,7 @@ function ReportForm() {
     },
   });
 
-  // Validate token and fetch data for edit mode
+  // Validate token and fetch report data for edit mode
   useEffect(() => {
     if (!token) {
       setError('Anda belum login. Silakan login terlebih dahulu.');
@@ -108,7 +109,7 @@ function ReportForm() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission to avoid page refresh
+    e.preventDefault();
     const missingFields = validateForm();
     if (missingFields) {
       window.Swal.fire({
@@ -159,16 +160,16 @@ function ReportForm() {
       animate="visible"
       variants={itemVariants}
     >
-      <Sidebar />
-      <div className="flex-1 flex justify-center items-start py-6">
+      <Sidebar role="user" />
+      <div className="flex-1 flex justify-center items-start py-6 overflow-x-hidden">
         <div className="container mx-auto max-w-4xl px-4 w-full">
           <motion.h1
             className="text-3xl font-bold text-pinjol-dark-3 mb-6 text-center"
             variants={itemVariants}
           >
-            {isEdit ? 'Edit Laporan' : 'Form Laporan Baru'}
+            {isEdit ? 'Edit Laporan' : 'Buat Laporan Baru'}
           </motion.h1>
-          <ErrorMessage message={error" onClose={() => setError('')} />
+          <ErrorMessage message={error} onClose={() => setError('')} />
           {isLoading && <Spinner />}
           <Card title={isEdit ? 'Form Edit Laporan' : 'Form Laporan Baru'} className="mb-6">
             <Form onSubmit={handleSubmit} className="space-y-4">
@@ -183,15 +184,17 @@ function ReportForm() {
                     { value: REPORT_TYPES.APP, label: 'Aplikasi' },
                   ]}
                   required
+                  className="bg-pinjol-light-2"
                 />
               </motion.div>
               <motion.div variants={itemVariants}>
                 <Input
-                  label="Nama Aplikasi"
+                  label="Nama Aplikasi/Web"
                   name="appName"
                   value={formData.appName}
                   onChange={handleChange}
                   required
+                  className="bg-pinjol-light-2"
                 />
               </motion.div>
               <motion.div variants={itemVariants}>
@@ -201,12 +204,14 @@ function ReportForm() {
                   value={formData.description}
                   onChange={handleChange}
                   required
+                  className="bg-pinjol-light-2"
                   rows="5"
                 />
               </motion.div>
               <motion.div variants={itemVariants}>
                 <DropdownChecklist
                   label="Kategori"
+                  name="category"
                   options={categoryOptions}
                   selected={formData.category}
                   onChange={handleCategoryChange}
@@ -221,6 +226,7 @@ function ReportForm() {
                   value={formData.incidentDate}
                   onChange={handleChange}
                   required
+                  className="bg-pinjol-light-2"
                 />
               </motion.div>
               <motion.div variants={itemVariants}>
@@ -230,16 +236,17 @@ function ReportForm() {
                   value={formData.evidence}
                   onChange={handleChange}
                   placeholder={EVIDENCE_PLACEHOLDER}
+                  className="bg-pinjol-light-2"
                 />
               </motion.div>
               <motion.div variants={itemVariants}>
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2"
+                  className="bg-pinjol-dark-3 text-white hover:bg-pinjol-dark-2 w-full"
                 >
                   <i className="fas fa-save mr-2"></i>
-                  {isEdit ? 'Perbarui Lapora' : 'Kirim Laporan'}
+                  {isEdit ? 'Perbarui Laporan' : 'Kirim Laporan'}
                 </Button>
               </motion.div>
             </Form>

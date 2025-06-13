@@ -19,9 +19,7 @@ class ReportPresenter {
   async createWebReport(reportData) {
     try {
       this.view.setLoading?.(true);
-      // Hapus field type dari data yang dikirim
       const { type, ...dataToSend } = reportData;
-      // Tambahkan userId dari UserModel
       dataToSend.userId = UserModel.getUserId();
       this.validateReportData(dataToSend);
       const token = UserModel.getToken();
@@ -264,40 +262,6 @@ class ReportPresenter {
         this.view.showError?.('Anda sedang offline, tidak dapat memuat daftar aplikasi');
       } else {
         const errorMessage = error.response?.data?.pesan || error.message || 'Gagal mengambil daftar aplikasi';
-        this.view.showError?.(errorMessage);
-      }
-      throw error;
-    } finally {
-      this.view.setLoading?.(false);
-    }
-  }
-
-  async verifyReport(id, { status } = {}, type) {
-    try {
-      this.view.setLoading?.(true);
-      const token = UserModel.getToken();
-      if (!token) throw new Error('Autentikasi diperlukan');
-      const role = UserModel.getRole();
-      if (role !== 'admin') throw new Error('Hanya admin yang dapat memverifikasi laporan');
-      if (!type || ![REPORT_TYPES.WEB, REPORT_TYPES.APP].includes(type)) {
-        throw new Error('Tipe laporan tidak valid');
-      }
-      const reportData = { status };
-      console.log('Verifying report ID:', id, 'Status:', status, 'Type:', type);
-      const response = await (type === REPORT_TYPES.WEB
-        ? ReportModel.updateWebReport(id, reportData, token)
-        : ReportModel.updateAppReport(id, reportData, token));
-      this.view.showSuccess?.(`Laporan ${status === 'accepted' ? 'diterima' : 'ditolak'} berhasil`);
-      this.view.refreshReports?.();
-      return response;
-    } catch (error) {
-      console.error('Error in verifyReport:', error);
-      if (error.isOffline) {
-        this.view.showError?.('Anda sedang offline, tidak dapat memverifikasi laporan');
-      } else if (error.status === 404) {
-        this.view.showError?.('Laporan tidak ditemukan');
-      } else {
-        const errorMessage = error.response?.data?.pesan || error.message || 'Terjadi kesalahan pada server';
         this.view.showError?.(errorMessage);
       }
       throw error;

@@ -136,7 +136,7 @@ function Landing() {
 
     return (
         <div className="bg-pinjol-light-1 font-roboto">
-            <FullScreenSection id="hero" className="bg-gradient-to-b from-pinjol-dark-4 to-pinjol-dark-3 text-white flex items-center justify-center relative py-[25%] sm">
+            <FullScreenSection id="hero" className="bg-gradient-to-b from-pinjol-dark-4 to-pinjol-dark-3 text-white flex items-center justify-center relative py-[25%] sm:py-[11%]">
                 <div className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center" style={{ filter: 'blur(4px)' }}></div>
                 <div className="absolute inset-0 bg-pinjol-dark-1 bg-opacity-70"></div>
                 <div className="relative z-10 text-center max-w-4xl space-y-10 mx-auto px-4">
