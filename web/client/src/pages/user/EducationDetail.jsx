@@ -19,8 +19,8 @@ function EducationDetail() {
     setLoading: setIsLoading,
     showError: setError,
     setEducation: (data) => setEducation({ ...data }), // Pastikan referensi baru
-    navigate: () => {},
-    showSuccess: () => {},
+    navigate: () => { },
+    showSuccess: () => { },
   });
 
   useEffect(() => {
@@ -54,9 +54,13 @@ function EducationDetail() {
               <span><i className="fas fa-tag mr-1"></i>{education.category || 'N/A'}</span>
               <span><i className="fas fa-calendar-alt mr-1"></i>{new Date(education.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
             </motion.div>
-            <motion.p className="text-pinjol-dark-1 leading-relaxed" variants={itemVariants}>
-              {education.content}
-            </motion.p>
+            <div className="text-pinjol-dark-1 leading-relaxed space-y-4">
+              {education.content.split('\n').map((paragraph, index) => (
+                <motion.p key={index} variants={itemVariants}>
+                  {paragraph.trim()}
+                </motion.p>
+              ))}
+            </div>
           </motion.div>
         )}
       </ContentWrapper>

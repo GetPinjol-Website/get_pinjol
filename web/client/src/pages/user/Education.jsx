@@ -48,7 +48,6 @@ function Education() {
               <Link to={`/education/${edu.id}`} key={edu.id}>
                 <Card title={edu.title} className="h-full flex flex-col justify-between bg-white hover:bg-pinjol-light-2 transition-colors duration-300 p-4">
                   <motion.div variants={itemVariants}>
-                    <h3 className="text-lg font-semibold text-pinjol-dark-2 mb-3 truncate text-overflow-ellipsis whitespace-nowrap overflow-hidden">{edu.title}</h3>
                     <p className="text-pinjol-dark-1 mb-4 flex-grow">{edu.content.substring(0, 100)}...</p>
                     <div className="flex justify-between text-sm text-pinjol-dark-4">
                       <span><i className="fas fa-tag mr-1"></i>{edu.category || 'N/A'}</span>
