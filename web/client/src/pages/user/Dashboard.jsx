@@ -11,7 +11,7 @@ import Spinner from '../../components/common/Spinner';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import Select from '../../components/common/Select';
 import Sidebar from '../../components/layout/Sidebar';
-import { REPORT_TYPES, REPORT_STATUSES, REPORT_LEVELS } from '../../utils/constants';
+import { REPORT_TYPES, REPORT_STATUSES } from '../../utils/constants';
 import { motion } from 'framer-motion';
 import { itemVariants } from '../../utils/animations';
 
@@ -37,16 +37,16 @@ function Dashboard() {
         background: '#E7F0DC',
       });
     },
-    setReports: (data) => setReports([...(data.data || data)]), // Menangani struktur data.data dari server
+    setReports: (data) => setReports([...(data.data || [])]),
     navigate,
     refreshReports: () => {
-      presenter.getUserReports({ type: filterType === '' ? undefined : filterType, _t: Date.now() });
+      presenter.getUserReports({ type: filterType || undefined, _t: Date.now() });
       setCurrentPage(1);
     },
   });
 
   useEffect(() => {
-    presenter.getUserReports({ type: filterType === '' ? undefined : filterType, _t: Date.now() });
+    presenter.getUserReports({ type: filterType || undefined, _t: Date.now() });
   }, [filterType]);
 
   const handleDelete = async (id, type) => {
@@ -59,10 +59,9 @@ function Dashboard() {
       console.log('Initiating delete for ID:', id, 'Type:', type);
       if (type === REPORT_TYPES.WEB) {
         await presenter.deleteWebReport(id);
-      } else {
+      } else if (type === REPORT_TYPES.APP) {
         await presenter.deleteAppReport(id);
       }
-      setReports((prev) => prev.filter((report) => report.id !== id));
       setModal({ isOpen: false, id: null, type: '' });
     } catch (err) {
       console.error('Error in confirmDelete:', err);
@@ -70,12 +69,10 @@ function Dashboard() {
     }
   };
 
-  const headers = ['Tipe', 'Nama Aplikasi', 'Deskripsi', 'Kategori', 'Tanggal', 'Bukti', 'Tingkat', 'Status', 'Aksi'];
+  const headers = ['Tipe', 'Nama Aplikasi', 'Deskripsi', 'Kategori', 'Tanggal', 'Bukti', 'Status', 'Aksi'];
 
   const renderRow = (report) => {
-    const level = report.level && Object.values(REPORT_LEVELS).includes(report.level) ? report.level : 'low';
     const category = Array.isArray(report.category) ? report.category : [];
-
     return [
       <td key="type" className="py-3 px-4"><Badge type={report.type} text={report.type === REPORT_TYPES.WEB ? 'Web' : 'App'} /></td>,
       <td key="appName" className="py-3 px-4">{report.appName || '-'}</td>,
@@ -85,10 +82,9 @@ function Dashboard() {
       <td key="evidence" className="py-3 px-4">
         {report.evidence ? <a href={report.evidence} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Lihat</a> : '-'}
       </td>,
-      <td key="level" className="py-3 px-4"><Badge type={level} text={level.charAt(0).toUpperCase() + level.slice(1)} /></td>,
       <td key="status" className="py-3 px-4"><Badge type={report.status?.toLowerCase() || 'pending'} text={REPORT_STATUSES[report.status?.toUpperCase()] || 'Menunggu'} /></td>,
       <td key="actions" className="py-3 px-4 flex space-x-2">
-        <Button onClick={() => navigate(`/report/edit/${report.id}`)} className="bg-pinjol-dark-3 text-white text-sm"><i className="fas fa-edit mr-2"></i> Edit</Button>
+        <Button onClick={() => navigate(`/report/edit/${report.id}/${report.type}`)} className="bg-pinjol-dark-3 text-white text-sm"><i className="fas fa-edit mr-2"></i> Edit</Button>
         <Button onClick={() => handleDelete(report.id, report.type)} className="bg-red-500 text-white hover:bg-red-400 text-sm"><i className="fas fa-trash mr-2"></i> Hapus</Button>
       </td>,
     ];

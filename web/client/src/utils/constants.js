@@ -6,17 +6,16 @@ export const ROLES = {
 };
 
 export const REPORT_CATEGORIES = [
-  'phishing: Penipuan',
-  'malware: Perangkat Lunak Berbahaya',
-  'data breach: Pelanggaran Data',
-  'privacy: Pelanggaran Privasi',
-  'scam: Penipuan',
-  'fraud: Kecurangan',
-  'identity theft: Pencurian Identitas',
-  'harassment: Pelecehan',
-  'illegal charges: Pungutan Ilegal',
-  'false advertising: Iklan Palsu',
-  'unfair practices: Praktik Tidak Adil',
+  'Penipuan: Penipuan',
+  'Perangkat Lunak Berbahaya: Perangkat Lunak Berbahaya',
+  'Pelanggaran Data: Pelanggaran Data',
+  'Pelanggaran Data: Pelanggaran Privasi',
+  'Kecurangan: Kecurangan',
+  'Pencurian Identitas: Pencurian Identitas',
+  'Pelecehan: Pelecehan',
+  'Pungutan Ilegal: Pungutan Ilegal',
+  'Iklan Palsu: Iklan Palsu',
+  'Praktik Tidak Adil : Praktik Tidak Adil',
 ];
 
 export const REPORT_TYPES = {

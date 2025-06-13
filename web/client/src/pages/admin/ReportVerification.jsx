@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import AdminPresenter from '../../presenters/AdminPresenter';
+import ReportPresenter from '../../presenters/ReportPresenter';
 import FullScreenSection from '../../components/ui/FullScreenSection';
 import Card from '../../components/ui/Card';
 import Table from '../../components/ui/Table';
@@ -9,8 +9,8 @@ import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
 import Sidebar from '../../components/layout/Sidebar';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
+import UserModel from '../../models/UserModel';
 import { REPORT_TYPES, REPORT_STATUSES } from '../../utils/constants';
-import axios from 'axios';
 import { motion } from 'framer-motion';
 import { itemVariants } from '../../utils/animations';
 
@@ -20,9 +20,9 @@ function ReportVerification() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [filterType, setFilterType] = useState('');
-  const [modal, setModal] = useState({ isOpen: false, id: null, status: '', type: '', level: 'low' });
+  const [modal, setModal] = useState({ isOpen: false, id: null, status: '', type: '' });
 
-  const presenter = new AdminPresenter({
+  const presenter = new ReportPresenter({
     setLoading: setIsLoading,
     showError: setError,
     showSuccess: (message) => {
@@ -35,24 +35,22 @@ function ReportVerification() {
       });
     },
     setReports: (data) => {
-      setReports([...data]);
-      const userIds = [...new Set(data.map((report) => report.userId))];
+      const reportData = data.data || [];
+      setReports([...reportData]);
+      const userIds = [...new Set(reportData.map((report) => report.userId))];
       fetchUserNames(userIds);
     },
-    refreshReports: () => presenter.getAllReports({ type: filterType, _t: Date.now() }),
+    refreshReports: () => presenter.getAllReports({ type: filterType || undefined, _t: Date.now() }),
   });
 
   const fetchUserNames = async (userIds) => {
     try {
-      const token = localStorage.getItem('token');
       const newUserNames = { ...userNames };
       for (const userId of userIds) {
         if (!newUserNames[userId]) {
           console.log(`Fetching user name for userId: ${userId}`);
-          const response = await axios.get(`http://localhost:9000/user/${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          newUserNames[userId] = response.data.data.username || 'Tidak Diketahui';
+          const user = await UserModel.getUserById(userId);
+          newUserNames[userId] = user.username || 'Tidak Diketahui';
         }
       }
       setUserNames(newUserNames);
@@ -63,36 +61,31 @@ function ReportVerification() {
   };
 
   useEffect(() => {
-    presenter.getAllReports({ type: filterType, _t: Date.now() });
+    presenter.getAllReports({ type: filterType || undefined, _t: Date.now() });
   }, [filterType]);
 
-  const handleVerify = (id, status, type, level = 'low') => {
-    console.log('Handle verify called with ID:', id, 'Status:', status, 'Type:', type, 'Level:', level);
+  const handleVerify = (id, status, type) => {
+    console.log('Handle verify called with ID:', id, 'Status:', status, 'Type:', type);
     if (!type || ![REPORT_TYPES.WEB, REPORT_TYPES.APP].includes(type)) {
       setError('Tipe laporan tidak valid');
       return;
     }
-    setModal({ isOpen: true, id, status, type, level });
+    setModal({ isOpen: true, id, status, type });
   };
 
   const confirmVerify = async () => {
-    const { id, status, type, level } = modal;
+    const { id, status, type } = modal;
     try {
-      console.log('Initiating verify for ID:', id, 'Status:', status, 'Type:', type, 'Level:', level);
-      await presenter.verifyReport(id, { status, level }, type);
-      setReports((prev) =>
-        prev.map((report) =>
-          report.id === id ? { ...report, status: status.toUpperCase(), level } : report
-        )
-      );
-      setModal({ isOpen: false, id: null, status: '', type: '', level: 'low' });
+      console.log('Initiating verify for ID:', id, 'Status:', status, 'Type:', type);
+      await presenter.verifyReport(id, { status }, type);
+      setModal({ isOpen: false, id: null, status: '', type: '' });
     } catch (err) {
       console.error('Error in confirmVerify:', err);
       setError(err.message || 'Gagal memverifikasi laporan');
     }
   };
 
-  const headers = ['Tipe', 'Nama Pengguna', 'Nama Aplikasi', 'Deskripsi', 'Kategori', 'Tanggal', 'Bukti', 'Tingkat', 'Status', 'Aksi'];
+  const headers = ['Tipe', 'Nama Pengguna', 'Nama Aplikasi', 'Deskripsi', 'Kategori', 'Tanggal', 'Bukti', 'Status', 'Aksi'];
 
   const renderRow = (report) => {
     console.log('Rendering report:', report);
@@ -108,21 +101,18 @@ function ReportVerification() {
       <td key="evidence" className="py-3 px-4">
         {report.evidence ? <a href={report.evidence} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Lihat Bukti</a> : '-'}
       </td>,
-      <td key="level" className="py-3 px-4"><Badge type={report.level} text={report.level ? report.level.charAt(0).toUpperCase() + report.level.slice(1) : 'Low'} /></td>,
       <td key="status" className="py-3 px-4"><Badge type={report.status?.toLowerCase() || 'pending'} text={REPORT_STATUSES[report.status?.toUpperCase()] || 'Menunggu'} /></td>,
       <td key="actions" className="py-3 px-4 flex space-x-2">
         {report.status === 'pending' && (
           <>
-            <select
-              onChange={(e) => handleVerify(report.id, 'accepted', type, e.target.value)}
-              className="border border-pinjol-light-4 rounded px-2 py-1 text-sm"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
             <Button
-              onClick={() => handleVerify(report.id, 'rejected', type, modal.level)}
+              onClick={() => handleVerify(report.id, 'accepted', type)}
+              className="bg-green-500 text-white hover:bg-green-400 text-sm"
+            >
+              <i className="fas fa-check mr-2"></i> Terima
+            </Button>
+            <Button
+              onClick={() => handleVerify(report.id, 'rejected', type)}
               className="bg-red-500 text-white hover:bg-red-400 text-sm"
             >
               <i className="fas fa-times mr-2"></i> Tolak
@@ -162,10 +152,10 @@ function ReportVerification() {
       </div>
       <ConfirmationModal
         isOpen={modal.isOpen}
-        onClose={() => setModal({ isOpen: false, id: null, status: '', type: '', level: 'low' })}
+        onClose={() => setModal({ isOpen: false, id: null, status: '', type: '' })}
         onConfirm={confirmVerify}
         title={`Konfirmasi ${modal.status === 'accepted' ? 'Terima' : 'Tolak'}`}
-        message={`Yakin ingin ${modal.status === 'accepted' ? `menerima laporan ini dengan tingkat ${modal.level}` : 'menolak laporan ini'}?`}
+        message={`Yakin ingin ${modal.status === 'accepted' ? 'menerima' : 'menolak'} laporan ini?`}
         confirmText={modal.status === 'accepted' ? 'Terima' : 'Tolak'}
       />
     </div>

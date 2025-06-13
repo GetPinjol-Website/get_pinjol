@@ -51,28 +51,82 @@ function Landing() {
         fetchStatistics();
     }, []);
 
-    const handleCheckSubmit = (e) => {
+    const handleCheckSubmit = async (e) => {
         e.preventDefault();
         if (!checkInput) {
             window.Swal.fire({
                 icon: 'warning',
                 title: 'Input Kosong',
-                text: 'Silakan masukkan nama aplikasi atau URL website untuk dilakukan pengecekan keamanan.',
+                text: 'Silakan masukkan nama aplikasi untuk dilakukan pengecekan keamanan.',
                 confirmButtonColor: '#255F38',
                 background: '#ECFAE5',
                 fontFamily: 'Roboto, sans-serif',
             });
             return;
         }
-        window.Swal.fire({
-            icon: 'success',
-            title: 'Pengecekan Berhasil Dimulai',
-            text: `Kami sedang memverifikasi "${checkInput}". Hasil lengkap akan segera tersedia. Terima kasih atas kepercayaan Anda menggunakan layanan kami!`,
-            confirmButtonColor: '#255F38',
-            background: '#ECFAE5',
-            fontFamily: 'Roboto, sans-serif',
-        });
-        setCheckInput('');
+
+        setIsLoading(true);
+        try {
+            const response = await fetch(`http://20.2.114.187:3000/analisis?app_name=${encodeURIComponent(checkInput)}`);
+            if (!response.ok) {
+                throw new Error('Gagal memeriksa aplikasi');
+            }
+            const data = await response.json();
+
+            // Menampilkan pop-up dengan hasil analisis
+            window.Swal.fire({
+                title: `Hasil Analisis: ${data.aplikasi}`,
+                html: `
+                    <div class="text-left font-roboto space-y-4">
+                        <p><strong>Developer:</strong> ${data.developer}</p>
+                        <p><strong>Status Legalitas:</strong> 
+                            <span class="${data.status_legalitas === 'legal' ? 'text-green-600' : 'text-red-600'}">
+                                ${data.status_legalitas.charAt(0).toUpperCase() + data.status_legalitas.slice(1)}
+                            </span>
+                        </p>
+                        <p><strong>Rating Playstore:</strong> ${data.rating_playstore} ⭐</p>
+                        <p><strong>Rekomendasi:</strong> ${data.rekomendasi}</p>
+                        <div class="mt-4">
+                            <h3 class="font-semibold">Detail Analisis Sentimen:</h3>
+                            <p><strong>Total Ulasan:</strong> ${data.detail_analisis.total_ulasan_dianalisis}</p>
+                            <div class="grid grid-cols-3 gap-2 mt-2">
+                                <div>
+                                    <p class="text-green-600">Positif: ${data.detail_analisis.sentimen_positif}</p>
+                                </div>
+                                <div>
+                                    <p class="text-red-600">Negatif: ${data.detail_analisis.sentimen_negatif}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600">Netral: ${data.detail_analisis.sentimen_netral}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                icon: data.status_legalitas === 'legal' ? 'success' : 'warning',
+                confirmButtonColor: '#255F38',
+                background: '#ECFAE5',
+                customClass: {
+                    popup: 'rounded-lg shadow-xl',
+                    title: 'text-2xl font-bold text-gray-800',
+                    htmlContainer: 'text-gray-700',
+                },
+                width: '90vw',
+                maxWidth: '600px',
+            });
+            setCheckInput('');
+        } catch (err) {
+            window.Swal.fire({
+                icon: 'error',
+                title: 'Pengecekan Gagal',
+                text: 'Terjadi kesalahan saat memeriksa aplikasi. Silakan coba lagi.',
+                confirmButtonColor: '#255F38',
+                background: '#ECFAE5',
+                fontFamily: 'Roboto, sans-serif',
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const itemVariants = {
@@ -82,7 +136,7 @@ function Landing() {
 
     return (
         <div className="bg-pinjol-light-1 font-roboto">
-            <FullScreenSection id="hero" className="bg-gradient-to-b from-pinjol-dark-4 to-pinjol-dark-3 text-white flex items-center justify-center relative py-[25%] sm:py-[11%]">
+            <FullScreenSection id="hero" className="bg-gradient-to-b from-pinjol-dark-4 to-pinjol-dark-3 text-white flex items-center justify-center relative py-[25%] sm">
                 <div className="absolute inset-0 bg-[url('/landing/getpinjol-security-shield.jpg')] bg-cover bg-center" style={{ filter: 'blur(4px)' }}></div>
                 <div className="absolute inset-0 bg-pinjol-dark-1 bg-opacity-70"></div>
                 <div className="relative z-10 text-center max-w-4xl space-y-10 mx-auto px-4">
@@ -294,7 +348,7 @@ function Landing() {
                         whileInView="visible"
                         viewport={{ once: true }}
                     >
-                        Ketik nama aplikasi atau URL pinjol, dan dapatkan laporan keamanan instan dari komunitas kami. Amankan keuangan Anda dalam satu klik!
+                        Ketik nama aplikasi pinjol, dan dapatkan laporan keamanan instan dari komunitas kami. Amankan keuangan Anda dalam satu klik!
                     </motion.p>
                     <motion.form
                         onSubmit={handleCheckSubmit}
@@ -308,7 +362,7 @@ function Landing() {
                             type="text"
                             value={checkInput}
                             onChange={(e) => setCheckInput(e.target.value)}
-                            placeholder="Masukkan nama aplikasi atau URL"
+                            placeholder="Masukkan nama aplikasi"
                             className="w-full max-w-md px-4 py-3 border-2 border-pinjol-light-4 rounded-lg text-pinjol-dark-1 focus:outline-none focus:border-pinjol-dark-3 focus:ring-2 focus:ring-pinjol-dark-3 transition-all"
                         />
                         <Button

@@ -7,7 +7,7 @@ import SearchBar from '../../components/ui/SearchBar';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import Spinner from '../../components/common/Spinner';
 import Badge from '../../components/common/Badge';
-import { REPORT_TYPES, REPORT_STATUSES, REPORT_LEVELS } from '../../utils/constants';
+import { REPORT_TYPES, REPORT_STATUSES } from '../../utils/constants';
 import { motion } from 'framer-motion';
 import { itemVariants } from '../../utils/animations';
 
@@ -32,15 +32,9 @@ function ReportList() {
       });
     },
     setReports: (data) => {
-      if (Array.isArray(data)) {
-        setReports(data);
-        setRecommendation('Belum Diketahui');
-        setRecommendationStatus('grey');
-      } else {
-        setReports(data.data);
-        setRecommendation(data.recommendation || 'Belum Diketahui');
-        setRecommendationStatus(data.recommendationStatus || 'grey');
-      }
+      setReports(data.data || []);
+      setRecommendation(data.recommendation || 'Belum Diketahui');
+      setRecommendationStatus(data.recommendationStatus || 'grey');
     },
   });
 
@@ -52,18 +46,15 @@ function ReportList() {
     setFilters(newFilters);
   };
 
-  const headers = ['Tipe', 'Nama Aplikasi', 'Kategori', 'Tanggal', 'Tingkat', 'Status'];
+  const headers = ['Tipe', 'Nama Aplikasi', 'Kategori', 'Tanggal', 'Status'];
 
   const renderRow = (report) => {
-    const level = report.level && Object.values(REPORT_LEVELS).includes(report.level) ? report.level : 'low';
     const category = Array.isArray(report.category) ? report.category : [];
-
     return [
       <td key="type" className="py-3 px-4"><Badge type={report.type} text={report.type === REPORT_TYPES.WEB ? 'Web' : 'App'} /></td>,
       <td key="appName" className="py-3 px-4">{report.appName || '-'}</td>,
       <td key="category" className="py-3 px-4">{category.join(', ') || '-'}</td>,
       <td key="incidentDate" className="py-3 px-4">{report.incidentDate ? new Date(report.incidentDate).toLocaleDateString() : '-'}</td>,
-      <td key="level" className="py-3 px-4"><Badge type={level} text={level.charAt(0).toUpperCase() + level.slice(1)} /></td>,
       <td key="status" className="py-3 px-4"><Badge type={report.status?.toLowerCase() || 'pending'} text={REPORT_STATUSES[report.status?.toUpperCase()] || 'Menunggu'} /></td>,
     ];
   };
