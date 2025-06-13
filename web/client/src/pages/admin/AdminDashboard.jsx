@@ -68,7 +68,7 @@ function AdminDashboard() {
   return (
     <div className="flex bg-pinjol-light-1">
       <Sidebar role="admin" onLogout={handleLogout} />
-      <motion.div {...pageTransition} className="content-with-sidebar pt-20 w-full">
+      <motion.div {...pageTransition} className="content-with-sidebar pt-20 w-flex-1">
         <motion.div className="container mx-auto px-4" variants={itemVariants} initial="hidden" animate="visible">
           <motion.h1
             className="text-3xl font-bold text-pinjol-dark-3 mb-6 flex items-center"

@@ -73,7 +73,7 @@ function Table({ headers, data, renderRow, totalPages, currentPage, onPageChange
   return (
     <div className="overflow-x-auto">
       <div className="max-h-[600px] overflow-y-auto">
-        <table className="min-w-full bg-white rounded-lg shadow-md">
+        <table className="min-w-full bg-green rounded-lg shadow-md">
           <thead className="bg-pgray-light-4 sticky top-0">
             <tr>
               {headers.map((header, index) => (
