@@ -22,7 +22,7 @@ function ReportForm() {
   const { id, type } = useParams();
   const navigate = useNavigate();
   const isEdit = !!id;
-  const token = localStorage.getItem('token');
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
   const initialFormData = {
     appName: '',
@@ -41,7 +41,10 @@ function ReportForm() {
 
   const presenter = new ReportPresenter({
     setLoading: setIsLoading,
-    showError: setError,
+    showError: (msg) => {
+      console.error('Presenter error:', msg);
+      setError(msg);
+    },
     showSuccess: setSuccess,
     navigate,
     setReport: (data) => {
@@ -57,17 +60,27 @@ function ReportForm() {
         userId: data.data?.userId || UserModel.getUserId() || '',
       });
     },
-    refreshReports: () => presenter.getUserReports({ _t: Date.now() }, token),
+    refreshReports: () => {
+      if (token) {
+        presenter.getUserReports({ _t: Date.now() }, token);
+      } else {
+        console.warn('No token found for refreshReports');
+        setError('Sesi telah berakhir. Silakan login kembali.');
+        navigate('/login');
+      }
+    },
   });
 
   useEffect(() => {
     if (!token) {
+      console.warn('No token found on mount');
       setError('Anda belum login. Silakan login terlebih dahulu.');
       navigate('/login');
       return;
     }
     if (isEdit && id) {
-      presenter.getReportById(id, type || REPORT_TYPES.WEB, { _t: Date.now() }, token);
+      console.log('Fetching report by ID:', id, 'Type:', type);
+      presenter.getReportById(id, type || REPORT_TYPES.WEB, { _t: Date.now() });
     }
   }, [id, type, token, navigate, isEdit, presenter]);
 
@@ -98,22 +111,24 @@ function ReportForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!token) {
+      console.warn('No token found on submit');
       setError('Sesi telah berakhir. Silakan login kembali.');
       navigate('/login');
       return;
     }
     const validationError = validateForm();
     if (validationError) {
+      console.error('Form validation error:', validationError);
       setError(validationError);
       return;
     }
     try {
       setError('');
-      setIsLoading(true);
       const { type, category, ...dataToSend } = formData;
       if (category.length > 0) {
         dataToSend.category = category;
       }
+      console.log('Submitting report:', dataToSend, 'IsEdit:', isEdit);
       if (isEdit) {
         await presenter[formData.type === REPORT_TYPES.WEB ? 'updateWebReport' : 'updateAppReport'](
           id,
@@ -135,9 +150,12 @@ function ReportForm() {
       }
     } catch (err) {
       console.error('Error submitting form:', err);
-      setError(err.message || 'Gagal menyimpan laporan');
-    } finally {
-      setIsLoading(false);
+      if (err.code === 401) {
+        setError('Sesi telah berakhir. Silakan login kembali.');
+        navigate('/login');
+      } else {
+        setError(err.message || 'Gagal menyimpan laporan');
+      }
     }
   };
 
@@ -175,7 +193,6 @@ function ReportForm() {
                 ]}
                 required
                 className="bg-pinjol-light-2"
-                disabled={isEdit} // Disable type change when editing
               />
               <Input
                 label="Nama Aplikasi/Web"
@@ -192,7 +209,7 @@ function ReportForm() {
                 onChange={handleChange}
                 required
                 className="bg-pinjol-light-2"
-                rows={5}
+                rows="5"
               />
               <DropdownChecklist
                 label="Kategori (opsional)"
@@ -208,7 +225,7 @@ function ReportForm() {
                 value={formData.incidentDate}
                 onChange={handleChange}
                 required
-                className="bg-pinjol-light-2"
+                className="bg-pinjol-light-1"
               />
               <Input
                 label="Link Bukti (opsional)"
@@ -216,7 +233,7 @@ function ReportForm() {
                 value={formData.evidence}
                 onChange={handleChange}
                 placeholder={EVIDENCE_PLACEHOLDER}
-                className="bg-pinjol-light-2"
+                className="bg-pinjol-light-1"
               />
               <Button
                 type="submit"

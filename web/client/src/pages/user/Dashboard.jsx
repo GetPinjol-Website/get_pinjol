@@ -24,33 +24,46 @@ function Dashboard() {
   const [filterType, setFilterType] = useState('');
   const [modal, setModal] = useState({ isOpen: false, id: null, type: '' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const reportsPerPage = 25;
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
 
   const presenter = new ReportPresenter({
     setLoading: setIsLoading,
-    showError: setError,
+    showError: (msg) => {
+      console.error('Presenter error:', msg);
+      setError(msg);
+    },
     showSuccess: setSuccess,
     setReports: (data) => setReports([...(data.data || [])]),
     navigate,
     refreshReports: () => {
-      presenter.getUserReports({ type: filterType || undefined, _t: Date.now() }, token);
+      if (token) {
+        console.log('Refreshing reports with token:', token.slice(0, 10));
+        presenter.getUserReports({ type: filterType || undefined, _t: Date.now() }, token);
+      } else {
+        console.warn('No token found for refreshReports');
+        setError('Sesi telah berakhir. Silakan login kembali.');
+        navigate('/login');
+      }
       setCurrentPage(1);
     },
   });
 
   useEffect(() => {
     if (!token) {
+      console.warn('No token found on mount');
       setError('Anda belum login. Silakan login terlebih dahulu.');
       navigate('/login');
       return;
     }
+    console.log('Fetching user reports with filter:', filterType);
     presenter.getUserReports({ type: filterType || undefined, _t: Date.now() }, token);
   }, [filterType, token]);
 
   const handleDelete = async (id, type) => {
     if (!token) {
+      console.warn('No token found on delete');
       setError('Sesi telah berakhir. Silakan login kembali.');
       navigate('/login');
       return;
@@ -60,12 +73,14 @@ function Dashboard() {
 
   const confirmDelete = async () => {
     if (!token) {
+      console.warn('No token found on confirm delete');
       setError('Sesi telah berakhir. Silakan login kembali.');
       navigate('/login');
       return;
     }
     try {
       const { id, type } = modal;
+      console.log('Confirming delete for report ID:', id, 'Type:', type);
       if (type === REPORT_TYPES.WEB) {
         await presenter.deleteWebReport(id, token);
       } else if (type === REPORT_TYPES.APP) {
@@ -77,7 +92,12 @@ function Dashboard() {
       presenter.refreshReports();
     } catch (err) {
       console.error('Error in confirmDelete:', err);
-      setError(err.message || 'Gagal menghapus laporan');
+      if (err.code === 401) {
+        setError('Sesi telah berakhir. Silakan login kembali.');
+        navigate('/login');
+      } else {
+        setError(err.message || 'Gagal menghapus laporan');
+      }
     }
   };
 
